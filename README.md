@@ -38,7 +38,7 @@ This will download the latest comic from [xkcd](http://xkcd.com)
 Options
 --------
 
-    python xkcd path="C:\\Users\" download="all"
+    python xkcd.py path="C:\\Users\" download="all"
     
 "path" variable specifies the folder to save the comics in.
 
