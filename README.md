@@ -44,7 +44,7 @@ Options
 
 "download" variable specifies whether to download "all" comics or the "latest" comic
 (Using "latest" will download all the comics published since you the last comic you downloaded. 
-If no prior comics have been downloaded, only the most recent comic will be downloaded.
+If no prior comics have been downloaded, only the most recent comic will be downloaded.)
 
 Author
 ------
