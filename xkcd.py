@@ -96,16 +96,19 @@ def main():
 	# already downloaded.
 	with open('xkcd', 'a+b') as statusfile:
 		if download == 'latest':
-			pass
+			try:
+				download_latest(website, statusfile)
+			except Exception, e:
+				print 'There was a problem: {0}'.format(str(e))
 
 		elif download == 'all':
 			try:
-				download_all(website, statusfile)
+				download_all(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
 			
 
-def download_all(url, stats):
+def download_all(stats):
 	""" Function to download all of the comics 
 	on the xkcd website
 	"""
@@ -154,6 +157,9 @@ def download_all(url, stats):
 
 		# Get the Prev button's url
 		url = get_next(soup)
+
+def download_latest(url, stats):
+	pass
 
 def get_next(soupobj):
 	""" This function returns a link to the previous comic
