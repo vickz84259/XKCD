@@ -20,8 +20,23 @@ def get_args():
 	""" Function to read the system arguments and return a tuple of 
 	the 'path' and 'download' arguments respectively
 	"""
-	path = 'C:\\XKCD'
+	
+	defaultpath = 'C:\\XKCD'
+	path = defaultpath
 	download = 'latest'
+
+	# Checks whether the default path exists and creates it if 
+	# necessary.
+	# The default path hosts a file named: 'pathfile' which stores
+	# the path to the xkcd comics.
+	if not os.path.lexists(path):
+		os.mkdir(path)
+		record_path(path, defaultpath)
+	else:
+		# Reading the path to the xkcd comics.
+		with open('pathfile', 'wb') as f:
+			path = f.readline()
+		os.chdir(path)
 
 	# If the argument is only the file name, return the default
 	# values.
@@ -33,20 +48,44 @@ def get_args():
 			t = tuple(i.split('='))
 			if t[0] == 'path':
 				path = t[1]
+
+				# Changes the path where xkcd comics are to be stored
+				# as specified by the user comments.
+				# Records the path to the file 'pathfile' for future
+				#reference
+				if not os.path.lexists(path):
+					os.mkdir(path)
+					record_path(defaultpath, path)
+				else:
+					record_path(defaultpath, path)
 				continue
+
 			elif t[0] == 'download':
 				download = t[1]
 				continue
 		else:
 			return path, download
 
+def record_path(filepath, newpath):
+	""" Function to record the path to the xkcd comics.
+
+	filepath parameter specifies where the file:'pathfile' exists.
+	This should be: 'C:\\XKCD' or the value in defaultpath
+
+	newpath parameter specifies the path to where the xkcd comics are
+	to be stored.
+	"""
+
+	os.chdir(filepath)
+	with open('pathfile', 'wb') as f:
+		f.write(newpath.encode('utf-8', 'replace'))
+
+	os.chdir(newpath)
 
 def main():
 	website = 'http://xkcd.com'
 
 	path, download = get_args()
-	os.mkdir(path)
-	os.chdir(path)
 
 	# Opening the file that lists the xkcd comics 
 	# already downloaded.
