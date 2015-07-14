@@ -178,9 +178,6 @@ def download(statusfile, start='1', end='#'):
 		# Get the Prev button's url
 		url = get_next(soup)
 
-def download_latest(url, stats):
-	pass
-
 def get_next(soupobj):
 	""" This function returns a link to the previous comic
 
