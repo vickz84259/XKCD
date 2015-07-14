@@ -94,6 +94,11 @@ def main():
 
 	# Opening the file that lists the xkcd comics 
 	# already downloaded.
+	#
+	# Format for writing statusfile:
+	# Comic no.***Comic Title***status:
+	# status include: 'Comic image not found', 'Error downloading'
+	# and 'Success.'
 	with open('xkcd', 'a+b') as statusfile:
 		if download == 'latest':
 			pass
@@ -105,14 +110,16 @@ def main():
 				print 'There was a problem: {0}'.format(str(e))
 			
 
-def download_all(url, stats):
+def download_all(url, statusfile):
 	""" Function to download all of the comics 
 	on the xkcd website
 	"""
+
+	status = ('Comic image not found', 'Error downloading', 'Success')
 	url = 'http://xkcd.com/1/'
 	while not url.endswith('#'):
+
 		# Getting the webpage
-		print 'Downloading page {0}...'.format(url)
 		res = requests.get(url)
 		try:
 			# Check whether the website is received successfully 
@@ -123,6 +130,8 @@ def download_all(url, stats):
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
 
+		# Getting the comic number and title 
+		comicno = os.path.split(url)[1]
 		title = soup.select('#ctitle')[0].getText()
 
 		# Getting the url for the image.
@@ -130,7 +139,9 @@ def download_all(url, stats):
 		if comicElem == []:
 			print 'Could not find comic image.'
 
-			stats.write('{0}--{1}--Comic image not found \n'.format(title, url)).encode('utf-8', 'replace')
+			statusfile.write('{0}***{1}***{2} \n'\
+				.format(comicno, title, status[0]))\
+				.encode('utf-8', 'replace')
 
 			# skip to the next link
 			url = get_next(soup)
@@ -143,14 +154,20 @@ def download_all(url, stats):
 				res = download_image(comicUrl)
 
 			except requests.exceptions.MissingSchema:
-				stats.write('{0}--{1}--Error downloading \n'.format(title, url)).encode('utf-8', 'replace')
+				statusfile.write('{0}***{1}***{2} \n'\
+					.format(comicno, title, status[1]))\
+					.encode('utf-8', 'replace')
 
 				# skip this comic
 				url = get_next(soup)
 				continue
 
 		# Save the image to path
-		save_image(res, stats, title, comicUrl)
+		save_image(res, statusfile,\
+					 comicnumber=comicno,\
+					 url=comicurl,\
+					 stat=status,\
+					 comictitle=title)
 
 		# Get the Prev button's url
 		url = get_next(soup)
@@ -170,7 +187,7 @@ def download_image(imgurl):
 	It returns a requests object.
 	"""
 
-	print 'Downloading image {0}...'.format(imgurl)
+	print 'Downloading image {0}...'.format(os.path.basename(imgurl))
 	res = requests.get(imgurl)
 	try:
 		res.raise_for_status()
@@ -179,17 +196,19 @@ def download_image(imgurl):
 
 	return res
 
-def save_image(req, statusfile, comictitle, name):
+def save_image(req, statusfile, **stats):
 	""" This function takes a requests object and a file object as
 	parameters.
 
 	The file object is used to keep a record of the image being saved.
 	"""
-	with open(os.path.basename(name), 'wb') as imageFile:
+	with open(os.path.basename(stats['url']), 'wb') as imageFile:
 		for chunk in req.iter_content(100000):
 				imageFile.write(chunk)
 
-	statusfile.write('{0}--{1}--Sucess \n'.format(comictitle, name)).encode('utf-8', 'replace')
+	statusfile.write('{0}***{1}***{2} \n'\
+		.format(stats['comicnumber'], stats['comictitle'], stats['status'][2]))\
+		.encode('utf-8', 'replace')
 
 
 if __name__ == '__main__':
