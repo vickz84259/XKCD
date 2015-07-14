@@ -105,25 +105,24 @@ def main():
 	with open('xkcd', 'a+b') as statusfile:
 		if download == 'latest':
 			try:
-				download(statusfile)
+				pass
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
 
 		elif download == 'all':
 			try:
-				download(statusfile)
+				download_comic(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
-			
 
-def download(statusfile, start='1', end='#'):
+def download_comic(statusfile, start='1', end='#'):
 	""" Function to download the comics 
 	on the xkcd website
 	"""
 
 	status = ('Comic image not found', 'Error downloading', 'Success')
 	url = 'http://xkcd.com/{0}'.format(start)
-	while not url.endswith('#'):
+	while not url.endswith(end):
 
 		# Getting the webpage
 		res = requests.get(url)
@@ -132,6 +131,7 @@ def download(statusfile, start='1', end='#'):
 			# and raises and exception if an error occurs
 			res.raise_for_status()
 		except Exception, e:
+			print sys.exc_traceback.tb_lineno
 			raise e
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
@@ -150,7 +150,7 @@ def download(statusfile, start='1', end='#'):
 				.encode('utf-8', 'replace'))
 
 			# skip to the next link
-			url = get_next(soup)
+			url = get_url(soup)
 			continue
 		else:
 			try:
@@ -165,7 +165,7 @@ def download(statusfile, start='1', end='#'):
 					.encode('utf-8', 'replace'))
 
 				# skip this comic
-				url = get_next(soup)
+				url = get_url(soup)
 				continue
 
 		# Save the image to path
@@ -176,7 +176,7 @@ def download(statusfile, start='1', end='#'):
 					 comictitle=title)
 
 		# Get the Prev button's url
-		url = get_next(soup)
+		url = get_url(soup)
 
 def get_url(soupobj, link='next'):
 	""" This function returns a link to the previous or next comic
@@ -200,6 +200,7 @@ def download_image(imgurl):
 	try:
 		res.raise_for_status()
 	except Exception, e:
+		print sys.exc_traceback.tb_lineno
 		raise e
 
 	return res
