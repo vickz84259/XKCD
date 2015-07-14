@@ -3,7 +3,7 @@
 #
 # Takes 2 optional arguments when launched from the command line
 # which in default are "download=latest" and 
-# "path=C:\\XKCD"
+# "path=C:\XKCD"
 #
 # 'download' argument specifies whether to download the 'latest' or
 # 'all' XKCD comics
@@ -14,13 +14,18 @@
 #
 # 'path' argument specifies the path where to save the comics
 
-import requests, os, bs4, sys
+# Standard library modules
+import os, sys
+
+# Third-party modules
+import requests, bs4
+
+# Project-specific modules
 
 def get_args():
 	""" Function to read the system arguments and return a tuple of 
 	the 'path' and 'download' arguments respectively
 	"""
-	
 	defaultpath = 'C:\\XKCD'
 	path = defaultpath
 	download = 'latest'
