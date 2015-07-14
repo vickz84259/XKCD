@@ -3,7 +3,7 @@
 #
 # Takes 2 optional arguments when launched from the command line
 # which in default are "download=latest" and 
-# "path=C:\Users\risper.omondi\Desktop\XKCD"
+# "path=C:\\XKCD"
 #
 # 'download' argument specifies whether to download the 'latest' or
 # 'all' XKCD comics
@@ -20,7 +20,7 @@ def get_args():
 	""" Function to read the system arguments and return a tuple of 
 	the 'path' and 'download' arguments respectively
 	"""
-	path = 'C:\\Users\\risper.omondi\\Desktop\\XKCD'
+	path = 'C:\\XKCD'
 	download = 'latest'
 
 	# If the argument is only the file name, return the default
@@ -45,6 +45,7 @@ def main():
 	website = 'http://xkcd.com'
 
 	path, download = get_args()
+	os.mkdir(path)
 	os.chdir(path)
 
 	# Opening the file that lists the xkcd comics 
