@@ -105,24 +105,24 @@ def main():
 	with open('xkcd', 'a+b') as statusfile:
 		if download == 'latest':
 			try:
-				download_latest(website, statusfile)
+				download(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
 
 		elif download == 'all':
 			try:
-				download_all(statusfile)
+				download(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
 			
 
-def download_all(statusfile):
-	""" Function to download all of the comics 
+def download(statusfile, start='1', end='#'):
+	""" Function to download the comics 
 	on the xkcd website
 	"""
 
 	status = ('Comic image not found', 'Error downloading', 'Success')
-	url = 'http://xkcd.com/1/'
+	url = 'http://xkcd.com/{0}'.format(start)
 	while not url.endswith('#'):
 
 		# Getting the webpage
