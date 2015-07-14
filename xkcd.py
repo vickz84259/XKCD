@@ -85,7 +85,7 @@ def download_all(url, stats):
 		if comicElem == []:
 			print 'Could not find comic image.'
 
-			stats.write('{0}--{1}--Comic image not found \n'.format(title, url))
+			stats.write('{0}--{1}--Comic image not found \n'.format(title, url)).encode('utf-8', 'replace')
 
 			# skip to the next link
 			url = get_next(soup)
@@ -98,7 +98,7 @@ def download_all(url, stats):
 				res = download_image(comicUrl)
 
 			except requests.exceptions.MissingSchema:
-				stats.write('{0}--{1}--Error downloading \n'.format(title, url))
+				stats.write('{0}--{1}--Error downloading \n'.format(title, url)).encode('utf-8', 'replace')
 
 				# skip this comic
 				url = get_next(soup)
@@ -144,7 +144,7 @@ def save_image(req, statusfile, comictitle, name):
 		for chunk in req.iter_content(100000):
 				imageFile.write(chunk)
 
-	statusfile.write('{0}--{1}--Sucess \n'.format(comictitle, name))
+	statusfile.write('{0}--{1}--Sucess \n'.format(comictitle, name)).encode('utf-8', 'replace')
 
 
 if __name__ == '__main__':
