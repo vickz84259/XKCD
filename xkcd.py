@@ -92,7 +92,6 @@ def record_path(filepath, newpath):
 	os.chdir(newpath)
 
 def main():
-	website = 'http://xkcd.com'
 
 	path, download = get_args()
 
@@ -112,12 +111,12 @@ def main():
 
 		elif download == 'all':
 			try:
-				download_all(website, statusfile)
+				download_all(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
 			
 
-def download_all(url, statusfile):
+def download_all(statusfile):
 	""" Function to download all of the comics 
 	on the xkcd website
 	"""
