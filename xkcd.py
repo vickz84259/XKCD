@@ -40,7 +40,7 @@ def get_args():
 	else:
 		# Reading the path to the xkcd comics.
 		os.chdir(path)
-		with open('pathfile', 'wb') as f:
+		with open('pathfile', 'rb') as f:
 			path = f.readline()
 		os.chdir(path)
 
