@@ -55,13 +55,7 @@ License
 -------
 read **LICENSE**
 
-Tasks
--------
-- [ ] Add concurrency to speed up the project
-- [ ] Create option to download comic by their number
-- [ ] Have somebody be able to download comic between a certain specific period
-- [ ] Create way to view the comics offline on browser via flask framework
-
 Miscellaneous
 -------------
-I am open to any suggestions on features and improvements on this project.
+If you have any issue, feature request or you want to report a bug; please open an issue about it.
+
