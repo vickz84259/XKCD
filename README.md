@@ -26,19 +26,45 @@ they are used.
 
 [Beautiful Soup Documentation](http://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 
+Installation
+------------
+To use this project and prevent conflict with other projects, it is recommended that you use **virtualenv** 
+
+For those who might not know, **virtualenv** (as the name suggests), allows you to create a python virtual environment where you can install modules in a specific environment and not system-wide where it can cause conflicts.
+
+For users starting out using **virtualenv**, get **virtualenvwrapper**
+alongside **virtualenv** and the process of maintaining the virtual environments will be easier. (**personal opinion**)
+
+For Windows users you can get **virtualenvwrapper-win**
+
+**Assumption**
+You already have **pip** and **setuptools** installed.
+
+Once in your virtual environment, Enter:
+	
+	pip install requests
+
+This installs the requests module.
+
+	pip install beautifulsoup4
+
+This installs the beautiful soup module.
+
 Usage
 ------
+(If you installed the external libraries in a virtual environment, 
+navigate to the project's location and activate the virtual environment before executing the command below.)
 Navigate to the project's location on the repository that you have cloned on your computer 
 and execute:
 
-    python xkcd.py 
+    python xkcd.py
     
 This will download the latest comic from [xkcd](http://xkcd.com)
 
 Options
 --------
 
-    python xkcd.py path="C:\\Users\" download="all"
+    python xkcd.py path=C:\Users\ download=all
     
 "path" variable specifies the folder to save the comics in.
 
