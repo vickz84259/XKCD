@@ -42,6 +42,9 @@ def get_args():
 		os.chdir(path)
 		with open('pathfile', 'rb') as f:
 			path = f.readline()
+		if not os.path.lexists(path):
+			os.mkdir(path)
+
 		os.chdir(path)
 
 	# If the argument is only the file name, return the default
@@ -208,7 +211,7 @@ def save_image(req, statusfile, **stats):
 				imageFile.write(chunk)
 
 	statusfile.write('{0}***{1}***{2} \n'\
-		.format(stats['comicnumber'], stats['comictitle'], stats['status'][2]))\
+		.format(stats['comicnumber'], stats['comictitle'], stats['stat'][2]))\
 		.encode('utf-8', 'replace')
 
 
