@@ -178,14 +178,16 @@ def download(statusfile, start='1', end='#'):
 		# Get the Prev button's url
 		url = get_next(soup)
 
-def get_next(soupobj):
-	""" This function returns a link to the previous comic
+def get_url(soupobj, link='next'):
+	""" This function returns a link to the previous or next comic
 
-	It takes a BeautifulSoup object as an argument
+	It takes a BeautifulSoup object as an argument.
+
+	Link argument takes either 'next' or 'prev'.
 	"""
 
-	nextLink = soupobj.select('a[rel="next"]')[0]
-	return 'http://xkcd.com' + nextLink.get('href')
+	nextLink = soupobj.select('a[rel="{0}"]'.format(link))[0]
+	return 'http://xkcd.com{0}'.format(nextLink.get('href')) 
 
 def download_image(imgurl):
 	""" This function downloads the image.
