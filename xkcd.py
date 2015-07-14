@@ -165,7 +165,7 @@ def download_all(url, statusfile):
 		# Save the image to path
 		save_image(res, statusfile,\
 					 comicnumber=comicno,\
-					 url=comicurl,\
+					 url=comicUrl,\
 					 stat=status,\
 					 comictitle=title)
 
