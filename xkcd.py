@@ -87,10 +87,12 @@ def get_args():
 		help='Downloads all xkcd comics.')
 
 	group.parser_comic.add_argument('-n', '--number', dest='comic_number',
+		default=argparse.SUPPRESS,
 		help='The comic number to be downloaded.')
 
 	group.parser_range.add_argument('-r', '--range', dest='comic_range',
-		nargs=2, help='Download the range of comics. e.g. --range 30 100\
+		default=argparse.SUPPRESS, nargs=2, 
+		help='Download the range of comics. e.g. --range 30 100\
 		  # represents the latest comic.')
 
 	args = parser.parse_args()
@@ -106,15 +108,15 @@ def get_args():
 
 def main():
 
-	path, download = get_args()
+	args = vars(get_args())
 
-	if download == 'latest':
+	if args['latest']:
 		try:
 			pass
 		except Exception, e:
 			print 'There was a problem: {0}'.format(str(e))
 
-	elif download == 'all':
+	elif args['all']:
 		try:
 			download_comic()
 		except Exception, e:
