@@ -138,41 +138,37 @@ def download_comic(start='1', end='#'):
 		comicElem = soup.select('#comic img')
 		if comicElem == []:
 			print 'Could not find comic image.'
-
-			with open('xkcd', 'a+b') as fin:
-				fin.write('{0}***{1}***{2} \n'\
-				.format(comicno, title, STATUS[0])\
-				.encode('utf-8', 'replace'))
+			update_file('xkcd', comicno, title, STATUS[0])
 
 			# skip to the next link
 			url = get_url(soup)
 			continue
 		else:
 			try:
-				comicUrl = 'http:{0}'.format(comicElem[0].get('src'))
+				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
 				# Download the image.
 				res = download_image(comicUrl)
 
 			except requests.exceptions.MissingSchema:
-				with open('xkcd', 'a+b') as fin:
-					fin.write('{0}***{1}***{2} \n'\
-					.format(comicno, title, STATUS[1])\
-					.encode('utf-8', 'replace'))
+				update_file('xkcd', comicno, title, STATUS[1])
 
 				# skip this comic
 				url = get_url(soup)
 				continue
 
 		# Save the image to path
-		save_image(res,\
-					 comicnumber=comicno,\
-					 url=comicUrl,\
-					 stat=STATUS,\
-					 comictitle=title)
+		save_image(res, url)
+
+		update_file('xkcd', comicno, title, STATUS[2])
 
 		# Get the Prev button's url
 		url = get_url(soup)
+
+def update_file(filename, *args):
+	with open(filename, 'a+b') as f:
+		f.write('{0}***{1}***{2} \n' \
+			.format(args[0], args[1], args[2]).encode('utf-8', 'replace'))
 
 def get_url(soupobj, link='next'):
 	""" This function returns a link to the previous or next comic
@@ -201,20 +197,15 @@ def download_image(imgurl):
 
 	return res
 
-def save_image(req, **stats):
+def save_image(req, url):
 	""" This function takes a requests object and a file object as
 	parameters.
 
 	The file object is used to keep a record of the image being saved.
 	"""
-	with open(os.path.basename(stats['url']), 'wb') as imageFile:
+	with open(os.path.basename(url), 'wb') as imageFile:
 		for chunk in req.iter_content(100000):
 				imageFile.write(chunk)
-
-	with open('xkcd', 'a+b') as fin:
-		fin.write('{0}***{1}***{2} \n'\
-		.format(stats['comicnumber'], stats['comictitle'], stats['stat'][2])\
-		.encode('utf-8', 'replace'))
 
 if __name__ == '__main__':
 	main()
