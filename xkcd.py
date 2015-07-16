@@ -46,7 +46,7 @@ def get_args():
 		config = create_config()
 	else:
 		config = ConfigParser.ConfigParser()
-		config.read('xckd.cfg')
+		config.read('xkcd.cfg')
 
 	parser = argparse.ArgumentParser(
 		formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -90,7 +90,7 @@ def get_args():
 		help='Downloads all xkcd comics.')
 
 	group.parser_comic.add_argument('-n', '--number', dest='comic_number',
-		default=argparse.SUPPRESS,
+		default=argparse.SUPPRESS, type=int,
 		help='The comic number to be downloaded.')
 
 	group.parser_range.add_argument('-r', '--range', dest='comic_range',
@@ -110,22 +110,52 @@ def get_args():
 	return args
 
 def main():
-
 	args = vars(get_args())
+	keys = args.keys()
 
-	if args['latest']:
-		try:
-			pass
-		except Exception, e:
-			logging.exception()
-			print 'There was a problem: {0}'.format(str(e))
+	comics = []
+	initial = None
+	final = None
+	with open('xkcd.log', 'rb') as fin:
+		for line in fin.readlines():
+			x = line.split(':')
+			if x[0] != 'INFO':
+				continue
+			else:
+				comics.append(x[1])
 
-	elif args['all']:
-		try:
-			download_comic()
-		except Exception, e:
-			logging.exception()
-			print 'There was a problem: {0}'.format(str(e))
+	for i in comics:
+		first = i.split('--')[0]
+		second = i.split('--')[1]
+		if initial == None or first < initial:
+			initial = int(first)
+		elif final != '#' and final == None or second == '#' or second > final:
+			end = second
+
+	try:
+		if 'comic_number' in keys:			
+				download_comic(start=str(args['comic_number']), 
+					end=str(int(args['comic_number'] + 1)))
+
+		elif 'comic_range' in keys and args['comic_range'][1] != '#':
+				download_comic(start=args['comic_range'][0],
+					end=str(int(args['comic_range'][1] + 1)))
+			
+		elif 'comic_range' in keys and args['comic_range'][1] == '#':
+				download_comic(start=args['comic_range'][0])
+			
+		elif args['all']:
+				download_comic()
+			
+		else:
+			if initial == None or final == '#':
+				download_comic(start='')
+			else:
+				download_comic(start=initial, end=str(int(final) + 1))
+	except Exception, e:
+				logging.exception()
+				print 'Error logged.'
+				print 'There was a problem: {}'.format(str(e))
 
 def download_comic(start='1', end='#'):
 	""" Function to download the comics 
@@ -145,6 +175,9 @@ def download_comic(start='1', end='#'):
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
 
+		if CURRENT_COMIC == '':
+			CURRENT_COMIC = os.path.split(url)[1]
+
 		# Getting the url for the image.
 		comicElem = soup.select('#comic img')
 		if len(comicElem) > 0:
@@ -158,19 +191,19 @@ def download_comic(start='1', end='#'):
 				url = get_next_url()
 
 			except requests.exceptions.MissingSchema:
-				logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[1]))
+				logging.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
 
 				# skip this comic
 				url = get_next_url()
 				continue
 		else:
-			logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[0]))
+			logging.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
 
 			# skip to the next link
 			url = get_next_url()
 			continue
 
-	logging.info('{0}--{1}: {2}'.format(start, end, STATUS[2]))
+	logging.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
