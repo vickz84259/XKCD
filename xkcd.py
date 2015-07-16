@@ -113,6 +113,10 @@ def main():
 def download_comic(start='1', end='#'):
 	""" Function to download the comics 
 	on the xkcd website
+
+	Start parameter specifies the first comic to download and
+	end specifies where to stop. If end is a comic number, the
+	specified comic will not be downloaded.
 	"""
 
 	url = 'http://xkcd.com/{0}'.format(start)
@@ -166,6 +170,11 @@ def download_comic(start='1', end='#'):
 		url = get_url(soup)
 
 def update_file(filename, *args):
+	""" Function to update a file with specific information
+
+	args is the information to be written in the file as per the 
+	recording format.
+	"""
 	with open(filename, 'a+b') as f:
 		f.write('{0}***{1}***{2} \n' \
 			.format(args[0], args[1], args[2]).encode('utf-8', 'replace'))
