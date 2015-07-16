@@ -173,13 +173,13 @@ def update_file(filename, *args):
 		f.write('{0}***{1}***{2} \n' \
 			.format(args[0], args[1], args[2]).encode('utf-8', 'replace'))
 
-def get_next_url(prev=False):
+def get_next_url(ascending=True):
 	global CURRENT_COMIC
 
-	if prev:
-		CURRENT_COMIC -= 1
-	else:
+	if ascending:
 		CURRENT_COMIC += 1
+	else:
+		CURRENT_COMIC -= 1
 
 	return 'http://xkcd.com/{0}'.format(CURRENT_COMIC) 
 
