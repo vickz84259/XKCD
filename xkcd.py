@@ -170,6 +170,8 @@ def download_comic(start='1', end='#'):
 			url = get_next_url()
 			continue
 
+	logging.info('{0}--{1}: {2}'.format(start, end, STATUS[2]))
+
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
 
