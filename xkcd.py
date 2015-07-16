@@ -15,210 +15,198 @@
 # 'path' argument specifies the path where to save the comics
 
 # Standard library modules
-import os, sys
+import os, sys, ConfigParser, argparse, logging
 
 # Third-party modules
 import requests, bs4
 
 # Project-specific modules
 
+# Defining Constants
+STATUS = ['Image not found', 'Error downloading', 'Success']
+
+# Constant defining the current comic
+CURRENT_COMIC = ''
+
+logging.basicConfig(filename='xkcd.log', level=logging.INFO,
+	format='%(levelname)s:%(message)s')
+
+def create_config():
+	config = ConfigParser.ConfigParser()
+	config.add_section('Defaults')
+	config.set('Defaults', 'path', 'C:\\XKCD')
+
+	with open('xkcd.cfg', 'wb') as configfile:
+		config.write(configfile)
+
+	return config
+
 def get_args():
-	""" Function to read the system arguments and return a tuple of 
-	the 'path' and 'download' arguments respectively
-	"""
-	defaultpath = 'C:\\XKCD'
-	path = defaultpath
-	download = 'latest'
-
-	# Checks whether the default path exists and creates it if 
-	# necessary.
-	# The default path hosts a file named: 'pathfile' which stores
-	# the path to the xkcd comics.
-	if not os.path.lexists(path):
-		os.mkdir(path)
-		record_path(path, defaultpath)
+	if not os.path.lexists('xkcd.cfg'):
+		config = create_config()
 	else:
-		# Reading the path to the xkcd comics.
-		os.chdir(path)
-		with open('pathfile', 'rb') as f:
-			path = f.readline()
-		if not os.path.lexists(path):
-			os.mkdir(path)
+		config = ConfigParser.ConfigParser()
+		config.read('xckd.cfg')
 
-		os.chdir(path)
+	parser = argparse.ArgumentParser(
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description=textwrap.dedent('''\
+			Examples on how to use the program
+			----------------------------------
+			python xkcd.py --path C:\\Users\\admin\\Desktop\\xkcd --all
+				**all xkcd comics will be saved in path described
 
-	# If the argument is only the file name, return the default
-	# values.
-	if len(sys.argv) == 1:
-		return path, download
+			python xkcd.py comic --number 158
+				**downloads comic number 158
 
+			python xkcd.py range --number 300 #
+				**downloads all comics from comic number 300
+					to the latest one. Inclusive of the latest one.
+
+			python xkcd.py --latest
+				**
+			'''))
+	# Creating sub commands to be used
+	subparsers = parser.add_subparsers()
+	# comic command
+	parser_comic = subparsers.add_parser('comic', 
+		help='Download a specific comic')
+	# range command 
+	parser_range = subparsers.add_parser('range',
+		help='Download a range of comics')
+
+	parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
+		help='The folder where the xkcd comics will be saved\
+				(default: %(default)s)')
+
+	# Only one of the arguments can be present in the command line.
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument('-l', '--latest', action='store_true',
+		help='Downloads the latest comic if there are no previously\
+			downloaded comics. Otherwise it downloads all the\
+			comics since the last one that was downloaded.')
+
+	group.add_argument('-a', '--all', action='store_true',
+		help='Downloads all xkcd comics.')
+
+	group.parser_comic.add_argument('-n', '--number', dest='comic_number',
+		default=argparse.SUPPRESS,
+		help='The comic number to be downloaded.')
+
+	group.parser_range.add_argument('-r', '--range', dest='comic_range',
+		default=argparse.SUPPRESS, nargs=2, 
+		help='Download the range of comics. e.g. --range 30 100\
+		  # represents the latest comic.')
+
+	args = parser.parse_args()
+
+	if args.path != config.get('Defaults', 'path') and (not os.path.lexists(args.path)):
+		os.mkdir(args.path)
+		config.set('Defaults', 'path', args.path)
+		os.chdir(args.path)
 	else:
-		for i in sys.argv[1:]:
-			t = tuple(i.split('='))
-			if t[0] == 'path':
-				path = t[1]
+		os.chdir(config.get('Defaults', 'path')
 
-				# Changes the path where xkcd comics are to be stored
-				# as specified by the user comments.
-				# Records the path to the file 'pathfile' for future
-				#reference
-				if not os.path.lexists(path):
-					os.mkdir(path)
-					record_path(defaultpath, path)
-				else:
-					record_path(defaultpath, path)
-				continue
-
-			elif t[0] == 'download':
-				download = t[1]
-				continue
-		else:
-			return path, download
-
-def record_path(filepath, newpath):
-	""" Function to record the path to the xkcd comics.
-
-	filepath parameter specifies where the file:'pathfile' exists.
-	This should be: 'C:\\XKCD' or the value in defaultpath
-
-	newpath parameter specifies the path to where the xkcd comics are
-	to be stored.
-	"""
-
-	os.chdir(filepath)
-	with open('pathfile', 'wb') as f:
-		f.write(newpath.encode('utf-8', 'replace'))
-
-	os.chdir(newpath)
+	return args
 
 def main():
 
-	path, download = get_args()
+	args = vars(get_args())
 
-	# Opening the file that lists the xkcd comics 
-	# already downloaded.
-	#
-	# Format for writing statusfile:
-	# Comic no.***Comic Title***status:
-	# status include: 'Comic image not found', 'Error downloading'
-	# and 'Success.'
-	with open('xkcd', 'a+b') as statusfile:
-		if download == 'latest':
-			try:
-				pass
-			except Exception, e:
-				print 'There was a problem: {0}'.format(str(e))
+	if args['latest']:
+		try:
+			pass
+		except Exception, e:
+			logging.exception()
+			print 'There was a problem: {0}'.format(str(e))
 
-		elif download == 'all':
-			try:
-				download_comic(statusfile)
-			except Exception, e:
-				print 'There was a problem: {0}'.format(str(e))
+	elif args['all']:
+		try:
+			download_comic()
+		except Exception, e:
+			logging.exception()
+			print 'There was a problem: {0}'.format(str(e))
 
-def download_comic(statusfile, start='1', end='#'):
+def download_comic(start='1', end='#'):
 	""" Function to download the comics 
 	on the xkcd website
-	"""
 
-	status = ('Comic image not found', 'Error downloading', 'Success')
+	Start parameter specifies the first comic to download and
+	end specifies where to stop. If end is a comic number, the
+	specified comic will not be downloaded.
+	"""
+	global CURRENT_COMIC
+	CURRENT_COMIC = start
 	url = 'http://xkcd.com/{0}'.format(start)
+
 	while not url.endswith(end):
 
-		# Getting the webpage
-		res = requests.get(url)
-		try:
-			# Check whether the website is received successfully 
-			# and raises and exception if an error occurs
-			res.raise_for_status()
-		except Exception, e:
-			print sys.exc_traceback.tb_lineno
-			raise e
+		res = get_resource(url)
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
 
-		# Getting the comic number and title 
-		comicno = os.path.split(url)[1]
-		title = soup.select('#ctitle')[0].getText()
-
 		# Getting the url for the image.
 		comicElem = soup.select('#comic img')
-		if comicElem == []:
-			print 'Could not find comic image.'
-
-			statusfile.write('{0}***{1}***{2} \n'\
-				.format(comicno, title, status[0])\
-				.encode('utf-8', 'replace'))
-
-			# skip to the next link
-			url = get_url(soup)
-			continue
-		else:
+		if len(comicElem) > 0:
 			try:
-				comicUrl = 'http:{0}'.format(comicElem[0].get('src'))
+				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
-				# Download the image.
+				# Download and save the image
 				res = download_image(comicUrl)
 
+				# Get the nexk link
+				url = get_next_url()
+
 			except requests.exceptions.MissingSchema:
-				statusfile.write('{0}***{1}***{2} \n'\
-					.format(comicno, title, status[1])\
-					.encode('utf-8', 'replace'))
+				logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[1]))
 
 				# skip this comic
-				url = get_url(soup)
+				url = get_next_url()
 				continue
+		else:
+			logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[0]))
 
-		# Save the image to path
-		save_image(res, statusfile,\
-					 comicnumber=comicno,\
-					 url=comicUrl,\
-					 stat=status,\
-					 comictitle=title)
+			# skip to the next link
+			url = get_next_url()
+			continue
 
-		# Get the Prev button's url
-		url = get_url(soup)
+	logging.info('{0}--{1}: {2}'.format(start, end, STATUS[2]))
 
-def get_url(soupobj, link='next'):
-	""" This function returns a link to the previous or next comic
+def get_next_url(ascending=True):
+	global CURRENT_COMIC
 
-	It takes a BeautifulSoup object as an argument.
+	if ascending:
+		CURRENT_COMIC += 1
+	else:
+		CURRENT_COMIC -= 1
 
-	Link argument takes either 'next' or 'prev'.
+	return 'http://xkcd.com/{0}'.format(CURRENT_COMIC) 
+
+def download_image(url):
+	""" This function downloads and saves the image specified
+	by the given url.
 	"""
 
-	nextLink = soupobj.select('a[rel="{0}"]'.format(link))[0]
-	return 'http://xkcd.com{0}'.format(nextLink.get('href')) 
+	print 'Downloading image {0}...'.format(os.path.basename(url))
+	res = get_resource(url)
 
-def download_image(imgurl):
-	""" This function downloads the image.
+	with open(os.path.basename(url), 'wb') as imageFile:
+		for chunk in res.iter_content(100000):
+			imageFile.write(chunk)
 
-	It returns a requests object.
+def get_resource(url):
+	""" Function to download a web resource at the specified url. 
+	Example: website, image e.t.c
+
+	It returns a requests object
 	"""
-
-	print 'Downloading image {0}...'.format(os.path.basename(imgurl))
-	res = requests.get(imgurl)
+	res = requests.get(url)
 	try:
 		res.raise_for_status()
 	except Exception, e:
-		print sys.exc_traceback.tb_lineno
 		raise e
 
 	return res
-
-def save_image(req, statusfile, **stats):
-	""" This function takes a requests object and a file object as
-	parameters.
-
-	The file object is used to keep a record of the image being saved.
-	"""
-	with open(os.path.basename(stats['url']), 'wb') as imageFile:
-		for chunk in req.iter_content(100000):
-				imageFile.write(chunk)
-
-	statusfile.write('{0}***{1}***{2} \n'\
-		.format(stats['comicnumber'], stats['comictitle'], stats['stat'][2])\
-		.encode('utf-8', 'replace'))
-
 
 if __name__ == '__main__':
 	main()
