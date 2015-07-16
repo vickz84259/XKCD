@@ -95,27 +95,19 @@ def main():
 
 	path, download = get_args()
 
-	# Opening the file that lists the xkcd comics 
-	# already downloaded.
-	#
-	# Format for writing statusfile:
-	# Comic no.***Comic Title***status:
-	# status include: 'Comic image not found', 'Error downloading'
-	# and 'Success.'
-	with open('xkcd', 'a+b') as statusfile:
-		if download == 'latest':
-			try:
-				pass
-			except Exception, e:
-				print 'There was a problem: {0}'.format(str(e))
+	if download == 'latest':
+		try:
+			pass
+		except Exception, e:
+			print 'There was a problem: {0}'.format(str(e))
 
-		elif download == 'all':
-			try:
-				download_comic(statusfile)
-			except Exception, e:
-				print 'There was a problem: {0}'.format(str(e))
+	elif download == 'all':
+		try:
+			download_comic()
+		except Exception, e:
+			print 'There was a problem: {0}'.format(str(e))
 
-def download_comic(statusfile, start='1', end='#'):
+def download_comic(start='1', end='#'):
 	""" Function to download the comics 
 	on the xkcd website
 	"""
@@ -145,7 +137,8 @@ def download_comic(statusfile, start='1', end='#'):
 		if comicElem == []:
 			print 'Could not find comic image.'
 
-			statusfile.write('{0}***{1}***{2} \n'\
+			with open('xkcd', 'a+b') as fin:
+				fin.write('{0}***{1}***{2} \n'\
 				.format(comicno, title, status[0])\
 				.encode('utf-8', 'replace'))
 
@@ -160,7 +153,8 @@ def download_comic(statusfile, start='1', end='#'):
 				res = download_image(comicUrl)
 
 			except requests.exceptions.MissingSchema:
-				statusfile.write('{0}***{1}***{2} \n'\
+				with open('xkcd', 'a+b') as fin:
+					fin.write('{0}***{1}***{2} \n'\
 					.format(comicno, title, status[1])\
 					.encode('utf-8', 'replace'))
 
@@ -169,7 +163,7 @@ def download_comic(statusfile, start='1', end='#'):
 				continue
 
 		# Save the image to path
-		save_image(res, statusfile,\
+		save_image(res,\
 					 comicnumber=comicno,\
 					 url=comicUrl,\
 					 stat=status,\
@@ -205,7 +199,7 @@ def download_image(imgurl):
 
 	return res
 
-def save_image(req, statusfile, **stats):
+def save_image(req, **stats):
 	""" This function takes a requests object and a file object as
 	parameters.
 
@@ -215,10 +209,10 @@ def save_image(req, statusfile, **stats):
 		for chunk in req.iter_content(100000):
 				imageFile.write(chunk)
 
-	statusfile.write('{0}***{1}***{2} \n'\
+	with open('xkcd', 'a+b') as fin:
+		fin.write('{0}***{1}***{2} \n'\
 		.format(stats['comicnumber'], stats['comictitle'], stats['stat'][2])\
 		.encode('utf-8', 'replace'))
-
 
 if __name__ == '__main__':
 	main()
