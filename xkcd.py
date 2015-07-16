@@ -122,15 +122,7 @@ def download_comic(start='1', end='#'):
 	url = 'http://xkcd.com/{0}'.format(start)
 	while not url.endswith(end):
 
-		# Getting the webpage
-		res = requests.get(url)
-		try:
-			# Check whether the website is received successfully 
-			# and raises and exception if an error occurs
-			res.raise_for_status()
-		except Exception, e:
-			print sys.exc_traceback.tb_lineno
-			raise e
+		res = get_resource(url)
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
 
@@ -140,19 +132,17 @@ def download_comic(start='1', end='#'):
 
 		# Getting the url for the image.
 		comicElem = soup.select('#comic img')
-		if comicElem == []:
-			print 'Could not find comic image.'
-			update_file('xkcd', comicno, title, STATUS[0])
-
-			# skip to the next link
-			url = get_url(soup)
-			continue
-		else:
+		if len(comicElem) > 0:
 			try:
 				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
-				# Download the image.
+				# Download and save the image
 				res = download_image(comicUrl)
+
+				update_file('xkcd', comicno, title, STATUS[2])
+
+				# Get the nexk link
+				url = get_url(soup)
 
 			except requests.exceptions.MissingSchema:
 				update_file('xkcd', comicno, title, STATUS[1])
@@ -160,14 +150,13 @@ def download_comic(start='1', end='#'):
 				# skip this comic
 				url = get_url(soup)
 				continue
+		else:
+			print 'Could not find comic image.'
+			update_file('xkcd', comicno, title, STATUS[0])
 
-		# Save the image to path
-		save_image(res, url)
-
-		update_file('xkcd', comicno, title, STATUS[2])
-
-		# Get the Prev button's url
-		url = get_url(soup)
+			# skip to the next link
+			url = get_url(soup)
+			continue
 
 def update_file(filename, *args):
 	""" Function to update a file with specific information
@@ -190,31 +179,31 @@ def get_url(soupobj, link='next'):
 	nextLink = soupobj.select('a[rel="{0}"]'.format(link))[0]
 	return 'http://xkcd.com{0}'.format(nextLink.get('href')) 
 
-def download_image(imgurl):
-	""" This function downloads the image.
-
-	It returns a requests object.
+def download_image(url):
+	""" This function downloads and saves the image specified
+	by the given url.
 	"""
 
-	print 'Downloading image {0}...'.format(os.path.basename(imgurl))
-	res = requests.get(imgurl)
+	print 'Downloading image {0}...'.format(os.path.basename(url))
+	res = get_resource(url)
+
+	with open(os.path.basename(url), 'wb') as imageFile:
+		for chunk in res.iter_content(100000):
+			imageFile.write(chunk)
+
+def get_resource(url):
+	""" Function to download a web resource at the specified url. 
+	Example: website, image e.t.c
+
+	It returns a requests object
+	"""
+	res = requests.get(url)
 	try:
 		res.raise_for_status()
 	except Exception, e:
-		print sys.exc_traceback.tb_lineno
 		raise e
 
 	return res
-
-def save_image(req, url):
-	""" This function takes a requests object and a file object as
-	parameters.
-
-	The file object is used to keep a record of the image being saved.
-	"""
-	with open(os.path.basename(url), 'wb') as imageFile:
-		for chunk in req.iter_content(100000):
-				imageFile.write(chunk)
 
 if __name__ == '__main__':
 	main()
