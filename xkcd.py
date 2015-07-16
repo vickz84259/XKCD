@@ -25,6 +25,9 @@ import requests, bs4
 # Defining Constants
 STATUS = ['Comic image not found', 'Error downloading', 'Success']
 
+# Constant defining the current comic
+CURRENT_COMIC = ''
+
 def get_args():
 	""" Function to read the system arguments and return a tuple of 
 	the 'path' and 'download' arguments respectively
@@ -118,8 +121,10 @@ def download_comic(start='1', end='#'):
 	end specifies where to stop. If end is a comic number, the
 	specified comic will not be downloaded.
 	"""
-
+	global CURRENT_COMIC
+	CURRENT_COMIC = start
 	url = 'http://xkcd.com/{0}'.format(start)
+
 	while not url.endswith(end):
 
 		res = get_resource(url)
@@ -142,20 +147,20 @@ def download_comic(start='1', end='#'):
 				update_file('xkcd', comicno, title, STATUS[2])
 
 				# Get the nexk link
-				url = get_url(soup)
+				url = get_next_url()
 
 			except requests.exceptions.MissingSchema:
 				update_file('xkcd', comicno, title, STATUS[1])
 
 				# skip this comic
-				url = get_url(soup)
+				url = get_next_url()
 				continue
 		else:
 			print 'Could not find comic image.'
 			update_file('xkcd', comicno, title, STATUS[0])
 
 			# skip to the next link
-			url = get_url(soup)
+			url = get_next_url()
 			continue
 
 def update_file(filename, *args):
@@ -168,16 +173,15 @@ def update_file(filename, *args):
 		f.write('{0}***{1}***{2} \n' \
 			.format(args[0], args[1], args[2]).encode('utf-8', 'replace'))
 
-def get_url(soupobj, link='next'):
-	""" This function returns a link to the previous or next comic
+def get_next_url(prev=False):
+	global CURRENT_COMIC
 
-	It takes a BeautifulSoup object as an argument.
+	if prev:
+		CURRENT_COMIC -= 1
+	else:
+		CURRENT_COMIC += 1
 
-	Link argument takes either 'next' or 'prev'.
-	"""
-
-	nextLink = soupobj.select('a[rel="{0}"]'.format(link))[0]
-	return 'http://xkcd.com{0}'.format(nextLink.get('href')) 
+	return 'http://xkcd.com/{0}'.format(CURRENT_COMIC) 
 
 def download_image(url):
 	""" This function downloads and saves the image specified
