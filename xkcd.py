@@ -22,6 +22,9 @@ import requests, bs4
 
 # Project-specific modules
 
+# Defining Constants
+STATUS = ['Comic image not found', 'Error downloading', 'Success']
+
 def get_args():
 	""" Function to read the system arguments and return a tuple of 
 	the 'path' and 'download' arguments respectively
@@ -112,7 +115,6 @@ def download_comic(start='1', end='#'):
 	on the xkcd website
 	"""
 
-	status = ('Comic image not found', 'Error downloading', 'Success')
 	url = 'http://xkcd.com/{0}'.format(start)
 	while not url.endswith(end):
 
@@ -139,7 +141,7 @@ def download_comic(start='1', end='#'):
 
 			with open('xkcd', 'a+b') as fin:
 				fin.write('{0}***{1}***{2} \n'\
-				.format(comicno, title, status[0])\
+				.format(comicno, title, STATUS[0])\
 				.encode('utf-8', 'replace'))
 
 			# skip to the next link
@@ -155,7 +157,7 @@ def download_comic(start='1', end='#'):
 			except requests.exceptions.MissingSchema:
 				with open('xkcd', 'a+b') as fin:
 					fin.write('{0}***{1}***{2} \n'\
-					.format(comicno, title, status[1])\
+					.format(comicno, title, STATUS[1])\
 					.encode('utf-8', 'replace'))
 
 				# skip this comic
@@ -166,7 +168,7 @@ def download_comic(start='1', end='#'):
 		save_image(res,\
 					 comicnumber=comicno,\
 					 url=comicUrl,\
-					 stat=status,\
+					 stat=STATUS,\
 					 comictitle=title)
 
 		# Get the Prev button's url
