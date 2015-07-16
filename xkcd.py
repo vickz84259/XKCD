@@ -15,7 +15,7 @@
 # 'path' argument specifies the path where to save the comics
 
 # Standard library modules
-import os, sys, ConfigParser, argparse
+import os, sys, ConfigParser, argparse, logging
 
 # Third-party modules
 import requests, bs4
@@ -23,10 +23,13 @@ import requests, bs4
 # Project-specific modules
 
 # Defining Constants
-STATUS = ['Comic image not found', 'Error downloading', 'Success']
+STATUS = ['Image not found', 'Error downloading', 'Success']
 
 # Constant defining the current comic
 CURRENT_COMIC = ''
+
+logging.basicConfig(filename='xkcd.log', level=logging.INFO,
+	format='%(levelname)s:%(message)s')
 
 def create_config():
 	config = ConfigParser.ConfigParser()
@@ -114,12 +117,14 @@ def main():
 		try:
 			pass
 		except Exception, e:
+			logging.exception()
 			print 'There was a problem: {0}'.format(str(e))
 
 	elif args['all']:
 		try:
 			download_comic()
 		except Exception, e:
+			logging.exception()
 			print 'There was a problem: {0}'.format(str(e))
 
 def download_comic(start='1', end='#'):
@@ -140,10 +145,6 @@ def download_comic(start='1', end='#'):
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
 
-		# Getting the comic number and title 
-		comicno = os.path.split(url)[1]
-		title = soup.select('#ctitle')[0].getText()
-
 		# Getting the url for the image.
 		comicElem = soup.select('#comic img')
 		if len(comicElem) > 0:
@@ -153,34 +154,21 @@ def download_comic(start='1', end='#'):
 				# Download and save the image
 				res = download_image(comicUrl)
 
-				update_file('xkcd', comicno, title, STATUS[2])
-
 				# Get the nexk link
 				url = get_next_url()
 
 			except requests.exceptions.MissingSchema:
-				update_file('xkcd', comicno, title, STATUS[1])
+				logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[1]))
 
 				# skip this comic
 				url = get_next_url()
 				continue
 		else:
-			print 'Could not find comic image.'
-			update_file('xkcd', comicno, title, STATUS[0])
+			logging.error('{0}: {1}'.format(CURRENT_COMIC, STATUS[0]))
 
 			# skip to the next link
 			url = get_next_url()
 			continue
-
-def update_file(filename, *args):
-	""" Function to update a file with specific information
-
-	args is the information to be written in the file as per the 
-	recording format.
-	"""
-	with open(filename, 'a+b') as f:
-		f.write('{0}***{1}***{2} \n' \
-			.format(args[0], args[1], args[2]).encode('utf-8', 'replace'))
 
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
