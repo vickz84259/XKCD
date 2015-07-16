@@ -1,18 +1,6 @@
 #! python2
 # xkcd.py - Downloads comics from xkcd.com.
 #
-# Takes 2 optional arguments when launched from the command line
-# which in default are "download=latest" and 
-# "path=C:\XKCD"
-#
-# 'download' argument specifies whether to download the 'latest' or
-# 'all' XKCD comics
-# Using "latest" will download all the comics published since you 
-# the last comic you downloaded. If no prior comics have been downloaded, 
-# only the most recent comic will be downloaded.
-#
-#
-# 'path' argument specifies the path where to save the comics
 
 # Standard library modules
 import os, sys, ConfigParser, argparse, logging
@@ -32,6 +20,11 @@ logging.basicConfig(filename='xkcd.log', level=logging.INFO,
 	format='%(levelname)s:%(message)s')
 
 def create_config():
+	""" Function used to create the configuration file 
+	if it does not exist in the program's path.
+
+	It returns a ConfigParser object
+	"""
 	config = ConfigParser.ConfigParser()
 	config.add_section('Defaults')
 	config.set('Defaults', 'path', 'C:\\XKCD')
@@ -42,6 +35,9 @@ def create_config():
 	return config
 
 def get_args():
+	""" Function that parses the command line arguments and returns 
+	them in a argparse.Namespace object
+	"""
 	if not os.path.lexists('xkcd.cfg'):
 		config = create_config()
 	else:
@@ -116,6 +112,9 @@ def main():
 	comics = []
 	initial = None
 	final = None
+
+	# Reading the log file to check the previously downloaded
+	# comics
 	with open('xkcd.log', 'rb') as fin:
 		for line in fin.readlines():
 			x = line.split(':')
@@ -129,8 +128,8 @@ def main():
 		second = i.split('--')[1]
 		if initial == None or first < initial:
 			initial = int(first)
-		elif final != '#' and final == None or second == '#' or second > final:
-			end = second
+		if final != '#' and final == None or second == '#' or second > final:
+			final = second
 
 	try:
 		if 'comic_number' in keys:			
@@ -170,7 +169,7 @@ def download_comic(start='1', end='#'):
 	url = 'http://xkcd.com/{0}'.format(start)
 
 	while not url.endswith(end):
-
+		# Getting the webpage
 		res = get_resource(url)
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
@@ -178,10 +177,10 @@ def download_comic(start='1', end='#'):
 		if CURRENT_COMIC == '':
 			CURRENT_COMIC = os.path.split(url)[1]
 
-		# Getting the url for the image.
 		comicElem = soup.select('#comic img')
 		if len(comicElem) > 0:
 			try:
+				# Getting the url for the image.
 				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
 				# Download and save the image
