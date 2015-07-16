@@ -104,23 +104,25 @@ def main():
 	# and 'Success.'
 	with open('xkcd', 'a+b') as statusfile:
 		if download == 'latest':
-			pass
+			try:
+				pass
+			except Exception, e:
+				print 'There was a problem: {0}'.format(str(e))
 
 		elif download == 'all':
 			try:
-				download_all(statusfile)
+				download_comic(statusfile)
 			except Exception, e:
 				print 'There was a problem: {0}'.format(str(e))
-			
 
-def download_all(statusfile):
-	""" Function to download all of the comics 
+def download_comic(statusfile, start='1', end='#'):
+	""" Function to download the comics 
 	on the xkcd website
 	"""
 
 	status = ('Comic image not found', 'Error downloading', 'Success')
-	url = 'http://xkcd.com/1/'
-	while not url.endswith('#'):
+	url = 'http://xkcd.com/{0}'.format(start)
+	while not url.endswith(end):
 
 		# Getting the webpage
 		res = requests.get(url)
@@ -129,6 +131,7 @@ def download_all(statusfile):
 			# and raises and exception if an error occurs
 			res.raise_for_status()
 		except Exception, e:
+			print sys.exc_traceback.tb_lineno
 			raise e
 
 		soup = bs4.BeautifulSoup(res.text, "html.parser")
@@ -147,7 +150,7 @@ def download_all(statusfile):
 				.encode('utf-8', 'replace'))
 
 			# skip to the next link
-			url = get_next(soup)
+			url = get_url(soup)
 			continue
 		else:
 			try:
@@ -162,7 +165,7 @@ def download_all(statusfile):
 					.encode('utf-8', 'replace'))
 
 				# skip this comic
-				url = get_next(soup)
+				url = get_url(soup)
 				continue
 
 		# Save the image to path
@@ -173,16 +176,18 @@ def download_all(statusfile):
 					 comictitle=title)
 
 		# Get the Prev button's url
-		url = get_next(soup)
+		url = get_url(soup)
 
-def get_next(soupobj):
-	""" This function returns a link to the previous comic
+def get_url(soupobj, link='next'):
+	""" This function returns a link to the previous or next comic
 
-	It takes a BeautifulSoup object as an argument
+	It takes a BeautifulSoup object as an argument.
+
+	Link argument takes either 'next' or 'prev'.
 	"""
 
-	nextLink = soupobj.select('a[rel="next"]')[0]
-	return 'http://xkcd.com' + nextLink.get('href')
+	nextLink = soupobj.select('a[rel="{0}"]'.format(link))[0]
+	return 'http://xkcd.com{0}'.format(nextLink.get('href')) 
 
 def download_image(imgurl):
 	""" This function downloads the image.
@@ -195,6 +200,7 @@ def download_image(imgurl):
 	try:
 		res.raise_for_status()
 	except Exception, e:
+		print sys.exc_traceback.tb_lineno
 		raise e
 
 	return res
