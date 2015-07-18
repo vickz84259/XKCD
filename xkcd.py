@@ -1,9 +1,8 @@
 #! python2
 # xkcd.py - Downloads comics from xkcd.com.
-#
 
 # Standard library modules
-import os, sys, ConfigParser, argparse, logging
+import os, sys, ConfigParser, argparse, logging, textwrap
 
 # Third-party modules
 import requests, bs4
@@ -29,6 +28,9 @@ def create_config():
 	config.add_section('Defaults')
 	config.set('Defaults', 'path', 'C:\\XKCD')
 
+	if not os.path.lexists('C:\\XKCD'):
+		os.mkdir('C:\\XKCD')
+
 	with open('xkcd.cfg', 'wb') as configfile:
 		config.write(configfile)
 
@@ -52,25 +54,18 @@ def get_args():
 			python xkcd.py --path C:\\Users\\admin\\Desktop\\xkcd --all
 				**all xkcd comics will be saved in path described
 
-			python xkcd.py comic --number 158
+			python xkcd.py -n 158
 				**downloads comic number 158
 
-			python xkcd.py range --number 300 #
+			python xkcd.py --range 300 #
 				**downloads all comics from comic number 300
-					to the latest one. Inclusive of the latest one.
+				to the latest one. Inclusive of the latest one.
 
 			python xkcd.py --latest
-				**
+				**Downloads the latest comic if there are no previously\
+				downloaded comics. Otherwise it downloads all the\
+				comics since the last one that was downloaded
 			'''))
-	# Creating sub commands to be used
-	subparsers = parser.add_subparsers()
-	# comic command
-	parser_comic = subparsers.add_parser('comic', 
-		help='Download a specific comic')
-	# range command 
-	parser_range = subparsers.add_parser('range',
-		help='Download a range of comics')
-
 	parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
 		help='The folder where the xkcd comics will be saved\
 				(default: %(default)s)')
@@ -85,11 +80,11 @@ def get_args():
 	group.add_argument('-a', '--all', action='store_true',
 		help='Downloads all xkcd comics.')
 
-	group.parser_comic.add_argument('-n', '--number', dest='comic_number',
+	group.add_argument('-n', dest='comic_number',
 		default=argparse.SUPPRESS, type=int,
 		help='The comic number to be downloaded.')
 
-	group.parser_range.add_argument('-r', '--range', dest='comic_range',
+	group.add_argument('--range', dest='comic_range',
 		default=argparse.SUPPRESS, nargs=2, 
 		help='Download the range of comics. e.g. --range 30 100\
 		  # represents the latest comic.')
@@ -101,12 +96,12 @@ def get_args():
 		config.set('Defaults', 'path', args.path)
 		os.chdir(args.path)
 	else:
-		os.chdir(config.get('Defaults', 'path')
+		os.chdir(config.get('Defaults', 'path'))
 
-	return args
+	return vars(args)
 
 def main():
-	args = vars(get_args())
+	args = get_args()
 	keys = args.keys()
 
 	comics = []
