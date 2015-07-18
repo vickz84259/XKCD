@@ -138,11 +138,11 @@ def main():
 	try:
 		if 'comic_number' in keys:			
 				download_comic(start=str(args['comic_number']), 
-					end=str(int(args['comic_number'] + 1)))
+					end=str(int(args['comic_number']) + 1))
 
 		elif 'comic_range' in keys and args['comic_range'][1] != '#':
 				download_comic(start=args['comic_range'][0],
-					end=str(int(args['comic_range'][1] + 1)))
+					end=str(int(args['comic_range'][1]) + 1))
 			
 		elif 'comic_range' in keys and args['comic_range'][1] == '#':
 				download_comic(start=args['comic_range'][0])
@@ -204,8 +204,11 @@ def download_comic(start='1', end='#'):
 			# skip to the next link
 			url = get_next_url()
 			continue
-
-	logger.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+	if end != '#':
+		end = str(int(end) - 1)
+		logger.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+	else:
+		logger.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
