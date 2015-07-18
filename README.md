@@ -1,6 +1,7 @@
-# Xkcd-Downloader-python
+# Xkcd-python
 This is a project written in python intented to download Xkcd comics. 
 
+I wrote it as a project a beginner would be involved in.
 
 What is [xkcd](http://xkcd.com)?
 -------------
@@ -61,16 +62,38 @@ and execute:
     
 This will download the latest comic from [xkcd](http://xkcd.com)
 
-Options
+Examples on how to use the program
+----------------------------------
+
+	python xkcd.py --path C:\Users\admin\Desktop\xkcd --all
+**all xkcd comics will be saved in path described**
+
+	python xkcd.py -n 158
+**downloads comic number 158**
+
+	python xkcd.py --range 300 #
+**downloads all comics from comic number 300 to the latest one. Inclusive of the latest one.**
+
+	python xkcd.py --range 4 100
+**downloads the comics between 4 and 100. Including both the comics numbered 4 and 100**
+
+Command-Line options
 --------
 
-    python xkcd.py path=C:\Users\ download=all
-    
-"path" variable specifies the folder to save the comics in.
+	-p <path>, --path <path>
+**The path where comics will be downloaded**
 
-"download" variable specifies whether to download "all" comics or the "latest" comic
-(Using "latest" will download all the comics published since you the last comic you downloaded. 
-If no prior comics have been downloaded, only the most recent comic will be downloaded.)
+	-l, --latest
+**Downloads the latest comic if there are no previously downloaded comics. Otherwise it downloads all the comics since the last one that was downloaded**
+
+	-a, -all
+**Downloads all xkcd comics**
+
+	-n 
+**Downloads the comic specified by the number**
+
+	--range
+**Download the comics in the specified range**
 
 Author
 ------
@@ -85,3 +108,4 @@ Miscellaneous
 -------------
 If you have any issue, feature request or you want to report a bug; please open an issue about it.
 
+Feel free to fork out and improve on the code. When done, do a pull request and I will get back to you
