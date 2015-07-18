@@ -39,20 +39,20 @@ Installation
 ------------
 
 To use this project and prevent conflict with other projects, it is
-recommended that you use **virtualenv**
+recommended that you use `virtualenv`_
 
-For those who might not know, **virtualenv** (as the name suggests),
+For those who might not know, `virtualenv`_ (as the name suggests),
 allows you to create a python virtual environment where you can install
 modules in a specific environment and not system-wide where it can cause
 conflicts.
 
-For users starting out using **virtualenv**, get **virtualenvwrapper**
-alongside **virtualenv** and the process of maintaining the virtual
+For users starting out using `virtualenv`_, get `virtualenvwrapper`_
+alongside `virtualenv`_ and the process of maintaining the virtual
 environments will be easier. (**personal opinion**)
 
-For Windows users you can get **virtualenvwrapper-win**
+For Windows users you can get `virtualenvwrapper-win`_
 
-**Assumption** You already have **pip** and **setuptools** installed.
+**Assumption** You already have `pip`_ and `setuptools`_ installed.
 
 Once in your virtual environment, Enter:
 
@@ -168,3 +168,8 @@ Feel free to fork out and improve on the code. When done, do a pull request and 
 .. _xkcd: http://xkcd.com
 .. _Requests Documentation: http://docs.python-requests.org
 .. _Beautiful Soup Documentation: http://www.crummy.com/software/BeautifulSoup/bs4/doc/
+.. _Virtualenv: https://virtualenv.pypa.io/en/latest/
+.. _virtualenvwrapper: https://pypi.python.org/pypi/virtualenvwrapper
+.. _virualenvwrapper_win: https://github.com/davidmarble/virtualenvwrapper-win/
+.. _pip: https://pip.pypa.io/en/stable/
+.. _setuptools: https://pypi.python.org/pypi/setuptools
