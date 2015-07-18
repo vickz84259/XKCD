@@ -183,7 +183,7 @@ def download_comic(start='1', end='#'):
 				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
 				# Download and save the image
-				res = download_image(comicUrl)
+				res = download_image(comicurl)
 
 				# Get the nexk link
 				url = get_next_url()
