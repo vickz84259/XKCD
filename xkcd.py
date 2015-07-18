@@ -11,9 +11,12 @@ import requests, bs4
 
 # Defining Constants
 STATUS = ['Image not found', 'Error downloading', 'Success']
+PATH = ''
 
 # Constant defining the current comic
 CURRENT_COMIC = ''
+
+CONFIG = ConfigParser.ConfigParser()
 
 logging.basicConfig(filename='xkcd.log', level=logging.INFO,
 	format='%(levelname)s:%(message)s')
@@ -24,27 +27,26 @@ def create_config():
 
 	It returns a ConfigParser object
 	"""
-	config = ConfigParser.ConfigParser()
-	config.add_section('Defaults')
-	config.set('Defaults', 'path', 'C:\\XKCD')
+	CONFIG.add_section('Defaults')
+	CONFIG.set('Defaults', 'path', 'C:\\XKCD')
 
 	if not os.path.lexists('C:\\XKCD'):
 		os.mkdir('C:\\XKCD')
 
 	with open('xkcd.cfg', 'wb') as configfile:
-		config.write(configfile)
+		CONFIG.write(configfile)
 
-	return config
+	return CONFIG
 
 def get_args():
 	""" Function that parses the command line arguments and returns 
 	them in a argparse.Namespace object
 	"""
+	global PATH
 	if not os.path.lexists('xkcd.cfg'):
-		config = create_config()
+		CONFIG = create_config()
 	else:
-		config = ConfigParser.ConfigParser()
-		config.read('xkcd.cfg')
+		CONFIG.read('xkcd.cfg')
 
 	parser = argparse.ArgumentParser(
 		formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -66,7 +68,7 @@ def get_args():
 				downloaded comics. Otherwise it downloads all the\
 				comics since the last one that was downloaded
 			'''))
-	parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
+	parser.add_argument('-p', '--path', default=CONFIG.get('Defaults', 'path'),
 		help='The folder where the xkcd comics will be saved\
 				(default: %(default)s)')
 
@@ -91,12 +93,11 @@ def get_args():
 
 	args = parser.parse_args()
 
-	if args.path != config.get('Defaults', 'path') and (not os.path.lexists(args.path)):
+	if args.path != CONFIG.get('Defaults', 'path') and (not os.path.lexists(args.path)):
 		os.mkdir(args.path)
-		config.set('Defaults', 'path', args.path)
-		os.chdir(args.path)
-	else:
-		os.chdir(config.get('Defaults', 'path'))
+		CONFIG.set('Defaults', 'path', args.path)
+	
+	PATH = args.path
 
 	return vars(args)
 
@@ -217,7 +218,7 @@ def download_image(url):
 	print 'Downloading image {0}...'.format(os.path.basename(url))
 	res = get_resource(url)
 
-	with open(os.path.basename(url), 'wb') as imageFile:
+	with open(os.join(PATH, os.path.basename(url)), 'wb') as imageFile:
 		for chunk in res.iter_content(100000):
 			imageFile.write(chunk)
 
