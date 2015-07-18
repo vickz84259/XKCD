@@ -99,6 +99,9 @@ def get_args():
 			CONFIG.set('Defaults', 'path', args.path)
 		else:
 			CONFIG.set('Defaults', 'path', args.path)
+
+		with open('xkcd.cfg', 'wb') as configfile:
+			CONFIG.write(configfile)
 	
 	PATH = args.path
 
