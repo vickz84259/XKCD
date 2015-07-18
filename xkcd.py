@@ -122,7 +122,7 @@ def main():
 			elif x[2] == STATUS[2]:
 				comics.append(x[1])
 
-	if comic != []:
+	if comics != []:
 		for i in comics:
 			first = i.split('--')[0]
 			second = i.split('--')[1]
