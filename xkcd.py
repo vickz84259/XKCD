@@ -224,7 +224,7 @@ def download_image(url):
 	print 'Downloading image {0}...'.format(os.path.basename(url))
 	res = get_resource(url)
 
-	with open(os.join(PATH, os.path.basename(url)), 'wb') as imageFile:
+	with open(os.path.join(PATH, os.path.basename(url)), 'wb') as imageFile:
 		for chunk in res.iter_content(100000):
 			imageFile.write(chunk)
 
