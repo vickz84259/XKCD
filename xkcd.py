@@ -1,9 +1,8 @@
 #! python2
 # xkcd.py - Downloads comics from xkcd.com.
-#
 
 # Standard library modules
-import os, sys, ConfigParser, argparse, logging
+import os, sys, ConfigParser, argparse, logging, textwrap
 
 # Third-party modules
 import requests, bs4
@@ -12,12 +11,14 @@ import requests, bs4
 
 # Defining Constants
 STATUS = ['Image not found', 'Error downloading', 'Success']
+PATH = ''
 
 # Constant defining the current comic
 CURRENT_COMIC = ''
 
-logging.basicConfig(filename='xkcd.log', level=logging.INFO,
-	format='%(levelname)s:%(message)s')
+CONFIG = ConfigParser.ConfigParser()
+
+LOGGER = logging.getLogger(__name__)
 
 def create_config():
 	""" Function used to create the configuration file 
@@ -25,24 +26,26 @@ def create_config():
 
 	It returns a ConfigParser object
 	"""
-	config = ConfigParser.ConfigParser()
-	config.add_section('Defaults')
-	config.set('Defaults', 'path', 'C:\\XKCD')
+	CONFIG.add_section('Defaults')
+	CONFIG.set('Defaults', 'path', 'C:\\XKCD')
+
+	if not os.path.lexists('C:\\XKCD'):
+		os.mkdir('C:\\XKCD')
 
 	with open('xkcd.cfg', 'wb') as configfile:
-		config.write(configfile)
+		CONFIG.write(configfile)
 
-	return config
+	return CONFIG
 
 def get_args():
 	""" Function that parses the command line arguments and returns 
 	them in a argparse.Namespace object
 	"""
+	global PATH, CONFIG
 	if not os.path.lexists('xkcd.cfg'):
-		config = create_config()
+		CONFIG = create_config()
 	else:
-		config = ConfigParser.ConfigParser()
-		config.read('xkcd.cfg')
+		CONFIG.read('xkcd.cfg')
 
 	parser = argparse.ArgumentParser(
 		formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -52,26 +55,19 @@ def get_args():
 			python xkcd.py --path C:\\Users\\admin\\Desktop\\xkcd --all
 				**all xkcd comics will be saved in path described
 
-			python xkcd.py comic --number 158
+			python xkcd.py -n 158
 				**downloads comic number 158
 
-			python xkcd.py range --number 300 #
+			python xkcd.py --range 300 #
 				**downloads all comics from comic number 300
-					to the latest one. Inclusive of the latest one.
+				to the latest one. Inclusive of the latest one.
 
 			python xkcd.py --latest
-				**
+				**Downloads the latest comic if there are no previously\
+				downloaded comics. Otherwise it downloads all the\
+				comics since the last one that was downloaded
 			'''))
-	# Creating sub commands to be used
-	subparsers = parser.add_subparsers()
-	# comic command
-	parser_comic = subparsers.add_parser('comic', 
-		help='Download a specific comic')
-	# range command 
-	parser_range = subparsers.add_parser('range',
-		help='Download a range of comics')
-
-	parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
+	parser.add_argument('-p', '--path', default=CONFIG.get('Defaults', 'path'),
 		help='The folder where the xkcd comics will be saved\
 				(default: %(default)s)')
 
@@ -85,28 +81,42 @@ def get_args():
 	group.add_argument('-a', '--all', action='store_true',
 		help='Downloads all xkcd comics.')
 
-	group.parser_comic.add_argument('-n', '--number', dest='comic_number',
+	group.add_argument('-n', dest='comic_number',
 		default=argparse.SUPPRESS, type=int,
 		help='The comic number to be downloaded.')
 
-	group.parser_range.add_argument('-r', '--range', dest='comic_range',
+	group.add_argument('--range', dest='comic_range',
 		default=argparse.SUPPRESS, nargs=2, 
 		help='Download the range of comics. e.g. --range 30 100\
 		  # represents the latest comic.')
 
 	args = parser.parse_args()
 
-	if args.path != config.get('Defaults', 'path') and (not os.path.lexists(args.path)):
-		os.mkdir(args.path)
-		config.set('Defaults', 'path', args.path)
-		os.chdir(args.path)
-	else:
-		os.chdir(config.get('Defaults', 'path')
+	if args.path != CONFIG.get('Defaults', 'path'):
+		if not os.path.lexists(args.path):
+			os.mkdir(args.path)
+			CONFIG.set('Defaults', 'path', args.path)
+		else:
+			CONFIG.set('Defaults', 'path', args.path)
 
-	return args
+		with open('xkcd.cfg', 'wb') as configfile:
+			CONFIG.write(configfile)
+	
+	PATH = args.path
+
+	return vars(args)
 
 def main():
-	args = vars(get_args())
+	LOGGER.setLevel(logging.INFO)
+
+	fh = logging.FileHandler('xkcd.log', 'ab')
+
+	formatter = logging.Formatter('%(levelname)s:%(message)s')
+	fh.setFormatter(formatter)
+
+	LOGGER.addHandler(fh)
+
+	args = get_args()
 	keys = args.keys()
 
 	comics = []
@@ -120,25 +130,26 @@ def main():
 			x = line.split(':')
 			if x[0] != 'INFO':
 				continue
-			else:
+			elif x[2] == STATUS[2]:
 				comics.append(x[1])
 
-	for i in comics:
-		first = i.split('--')[0]
-		second = i.split('--')[1]
-		if initial == None or first < initial:
-			initial = int(first)
-		if final != '#' and final == None or second == '#' or second > final:
-			final = second
+	if comics != []:
+		for i in comics:
+			first = i.split('--')[0]
+			second = i.split('--')[1]
+			if initial == None or first < initial:
+				initial = int(first)
+			if final != '#' and final == None or second == '#' or second > final:
+				final = second
 
 	try:
 		if 'comic_number' in keys:			
 				download_comic(start=str(args['comic_number']), 
-					end=str(int(args['comic_number'] + 1)))
+					end=str(int(args['comic_number']) + 1))
 
 		elif 'comic_range' in keys and args['comic_range'][1] != '#':
 				download_comic(start=args['comic_range'][0],
-					end=str(int(args['comic_range'][1] + 1)))
+					end=str(int(args['comic_range'][1]) + 1))
 			
 		elif 'comic_range' in keys and args['comic_range'][1] == '#':
 				download_comic(start=args['comic_range'][0])
@@ -152,9 +163,8 @@ def main():
 			else:
 				download_comic(start=initial, end=str(int(final) + 1))
 	except Exception, e:
-				logging.exception()
-				print 'Error logged.'
-				print 'There was a problem: {}'.format(str(e))
+		LOGGER.exception('There was a problem: {}'.format(str(e)))
+		print 'Error logged.' 
 
 def download_comic(start='1', end='#'):
 	""" Function to download the comics 
@@ -184,33 +194,36 @@ def download_comic(start='1', end='#'):
 				comicurl = 'http:{0}'.format(comicElem[0].get('src'))
 
 				# Download and save the image
-				res = download_image(comicUrl)
+				res = download_image(comicurl)
 
 				# Get the nexk link
 				url = get_next_url()
 
 			except requests.exceptions.MissingSchema:
-				logging.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
+				LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
 
 				# skip this comic
 				url = get_next_url()
 				continue
 		else:
-			logging.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
+			LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
 
 			# skip to the next link
 			url = get_next_url()
 			continue
-
-	logging.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+	if end != '#':
+		end = str(int(end) - 1)
+		LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+	else:
+		LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
 
 	if ascending:
-		CURRENT_COMIC += 1
+		CURRENT_COMIC = str(int(CURRENT_COMIC) + 1)
 	else:
-		CURRENT_COMIC -= 1
+		CURRENT_COMIC = str(int(CURRENT_COMIC) - 1)
 
 	return 'http://xkcd.com/{0}'.format(CURRENT_COMIC) 
 
@@ -222,7 +235,7 @@ def download_image(url):
 	print 'Downloading image {0}...'.format(os.path.basename(url))
 	res = get_resource(url)
 
-	with open(os.path.basename(url), 'wb') as imageFile:
+	with open(os.path.join(PATH, os.path.basename(url)), 'wb') as imageFile:
 		for chunk in res.iter_content(100000):
 			imageFile.write(chunk)
 
