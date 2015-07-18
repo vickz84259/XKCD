@@ -1,6 +1,9 @@
 TO DO:
-  [ ] Concurrency to the project to improve speed of execution
+ 
+1.  [ ] Concurrency to the project to improve speed of execution
+ 
+2.  [ ] Option to download comic of a specific date
   
-  [ ] Option to download comic of a specific date
-  [ ] option to download comics of a range of dates
-  [ ] Upload project as module in PyPi for others to build on
+3.  [ ] option to download comics of a range of dates
+  
+4.  [ ] Upload project as module in PyPi for others to build on
