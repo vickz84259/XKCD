@@ -116,16 +116,17 @@ def main():
 			x = line.split(':')
 			if x[0] != 'INFO':
 				continue
-			else:
+			elif x[2] == STATUS[2]:
 				comics.append(x[1])
 
-	for i in comics:
-		first = i.split('--')[0]
-		second = i.split('--')[1]
-		if initial == None or first < initial:
-			initial = int(first)
-		if final != '#' and final == None or second == '#' or second > final:
-			final = second
+	if comic != []:
+		for i in comics:
+			first = i.split('--')[0]
+			second = i.split('--')[1]
+			if initial == None or first < initial:
+				initial = int(first)
+			if final != '#' and final == None or second == '#' or second > final:
+				final = second
 
 	try:
 		if 'comic_number' in keys:			
