@@ -18,9 +18,7 @@ CURRENT_COMIC = ''
 
 CONFIG = ConfigParser.ConfigParser()
 
-logging.basicConfig(filename='xkcd.log', level=logging.INFO,
-	format='%(levelname)s:%(message)s')
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 def create_config():
 	""" Function used to create the configuration file 
@@ -109,6 +107,15 @@ def get_args():
 	return vars(args)
 
 def main():
+	LOGGER.setLevel(logging.INFO)
+
+	fh = logging.FileHandler('xkcd.log', 'ab')
+
+	formatter = logging.Formatter('%(levelname)s:%(message)s')
+	fh.setFormatter(formatter)
+
+	LOGGER.addHandler(fh)
+
 	args = get_args()
 	keys = args.keys()
 
@@ -156,8 +163,8 @@ def main():
 			else:
 				download_comic(start=initial, end=str(int(final) + 1))
 	except Exception, e:
-				logger.exception('There was a problem: {}'.format(str(e)))
-				print 'Error logged.' 
+		LOGGER.exception('There was a problem: {}'.format(str(e)))
+		print 'Error logged.' 
 
 def download_comic(start='1', end='#'):
 	""" Function to download the comics 
@@ -193,22 +200,22 @@ def download_comic(start='1', end='#'):
 				url = get_next_url()
 
 			except requests.exceptions.MissingSchema:
-				logger.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
+				LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
 
 				# skip this comic
 				url = get_next_url()
 				continue
 		else:
-			logger.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
+			LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
 
 			# skip to the next link
 			url = get_next_url()
 			continue
 	if end != '#':
 		end = str(int(end) - 1)
-		logger.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+		LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 	else:
-		logger.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+		LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 
 def get_next_url(ascending=True):
 	global CURRENT_COMIC
