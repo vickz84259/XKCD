@@ -42,7 +42,7 @@ def get_args():
 	""" Function that parses the command line arguments and returns 
 	them in a argparse.Namespace object
 	"""
-	global PATH
+	global PATH, CONFIG
 	if not os.path.lexists('xkcd.cfg'):
 		CONFIG = create_config()
 	else:
@@ -148,9 +148,8 @@ def main():
 			else:
 				download_comic(start=initial, end=str(int(final) + 1))
 	except Exception, e:
-				logging.exception()
-				print 'Error logged.'
-				print 'There was a problem: {}'.format(str(e))
+				logging.exception('There was a problem: {}'.format(str(e)))
+				print 'Error logged.' 
 
 def download_comic(start='1', end='#'):
 	""" Function to download the comics 
