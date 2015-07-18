@@ -211,9 +211,9 @@ def get_next_url(ascending=True):
 	global CURRENT_COMIC
 
 	if ascending:
-		CURRENT_COMIC += 1
+		CURRENT_COMIC = str(int(CURRENT_COMIC) + 1)
 	else:
-		CURRENT_COMIC -= 1
+		CURRENT_COMIC = str(int(CURRENT_COMIC) - 1)
 
 	return 'http://xkcd.com/{0}'.format(CURRENT_COMIC) 
 
