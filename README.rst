@@ -50,7 +50,7 @@ For users starting out using `virtualenv`_, get `virtualenvwrapper`_
 alongside `virtualenv`_ and the process of maintaining the virtual
 environments will be easier. (**personal opinion**)
 
-For Windows users you can get `virtualenvwrapper-win`_
+For Windows users you can get `virtualenvwrapper_win`_
 
 **Assumption** You already have `pip`_ and `setuptools`_ installed.
 
