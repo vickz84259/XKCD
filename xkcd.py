@@ -93,9 +93,12 @@ def get_args():
 
 	args = parser.parse_args()
 
-	if args.path != CONFIG.get('Defaults', 'path') and (not os.path.lexists(args.path)):
-		os.mkdir(args.path)
-		CONFIG.set('Defaults', 'path', args.path)
+	if args.path != CONFIG.get('Defaults', 'path'):
+		if not os.path.lexists(args.path):
+			os.mkdir(args.path)
+			CONFIG.set('Defaults', 'path', args.path)
+		else:
+			CONFIG.set('Defaults', 'path', args.path)
 	
 	PATH = args.path
 
