@@ -50,7 +50,7 @@ For users starting out using `virtualenv`_, get `virtualenvwrapper`_
 alongside `virtualenv`_ and the process of maintaining the virtual
 environments will be easier. (**personal opinion**)
 
-For Windows users you can get `virtualenvwrapper_win`_
+For Windows users you can get `virtualenvwrapperwin`_
 
 **Assumption** You already have `pip`_ and `setuptools`_ installed.
 
@@ -170,6 +170,6 @@ Feel free to fork out and improve on the code. When done, do a pull request and 
 .. _Beautiful Soup Documentation: http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 .. _Virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _virtualenvwrapper: https://pypi.python.org/pypi/virtualenvwrapper
-.. _virualenvwrapper_win: https://github.com/davidmarble/virtualenvwrapper-win/
+.. _virualenvwrapperwin: https://github.com/davidmarble/virtualenvwrapper-win/
 .. _pip: https://pip.pypa.io/en/stable/
 .. _setuptools: https://pypi.python.org/pypi/setuptools
