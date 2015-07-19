@@ -19,9 +19,6 @@ import bs4
 STATUS = ['Image not found', 'Error downloading', 'Success']
 PATH = ''
 
-# Constant defining the current comic
-CURRENT_COMIC = ''
-
 CONFIG = ConfigParser.ConfigParser()
 
 LOGGER = logging.getLogger(__name__)
@@ -190,8 +187,7 @@ def download_comic(start='1', end='#'):
     end specifies where to stop. If end is a comic number, the
     specified comic will not be downloaded.
     """
-    global CURRENT_COMIC
-    CURRENT_COMIC = start
+    current_comic = start
     url = 'http://xkcd.com/{0}'.format(start)
 
     while not url.endswith(end):
@@ -200,8 +196,8 @@ def download_comic(start='1', end='#'):
 
         soup = bs4.BeautifulSoup(res.text, "html.parser")
 
-        if CURRENT_COMIC == '':
-            CURRENT_COMIC = os.path.split(url)[1]
+        if current_comic == '':
+            current_comic = os.path.split(url)[1]
 
         image_element = soup.select('#comic img')
         if len(image_element) > 0:
@@ -213,19 +209,19 @@ def download_comic(start='1', end='#'):
                 res = download_image(comic_url)
 
                 # Get the nexk link
-                url = get_next_url()
+                url = get_next_url(current_comic)
 
             except requests.exceptions.MissingSchema:
-                LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[1]))
+                LOGGER.error('{0}:{1}'.format(current_comic, STATUS[1]))
 
                 # skip this comic
-                url = get_next_url()
+                url = get_next_url(current_comic)
                 continue
         else:
-            LOGGER.error('{0}:{1}'.format(CURRENT_COMIC, STATUS[0]))
+            LOGGER.error('{0}:{1}'.format(current_comic, STATUS[0]))
 
             # skip to the next link
-            url = get_next_url()
+            url = get_next_url(current_comic)
             continue
     if end != '#':
         end = str(int(end) - 1)
@@ -234,15 +230,13 @@ def download_comic(start='1', end='#'):
         LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
 
 
-def get_next_url(ascending=True):
-    global CURRENT_COMIC
-
+def get_next_url(comic, ascending=True):
     if ascending:
-        CURRENT_COMIC = str(int(CURRENT_COMIC) + 1)
+        comic = str(int(comic) + 1)
     else:
-        CURRENT_COMIC = str(int(CURRENT_COMIC) - 1)
+        comic = str(int(comic) - 1)
 
-    return 'http://xkcd.com/{0}'.format(CURRENT_COMIC)
+    return 'http://xkcd.com/{0}'.format(comic)
 
 
 def download_image(url):
