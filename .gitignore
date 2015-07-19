@@ -1,2 +1,6 @@
 xkcd.cfg
 xkcd.log
+
+.codeintel/
+vick.sublime-project
+vick.sublime-workspace
