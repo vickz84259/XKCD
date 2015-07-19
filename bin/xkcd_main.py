@@ -3,15 +3,11 @@
 # xkcd.py - Downloads comics from xkcd.com.
 
 # Standard library modules
-import os
 import logging
-
-# Third-party modules
-import requests
-import bs4
 
 # Project-specific modules
 import argument
+import xkcd
 
 
 def main():
@@ -87,7 +83,7 @@ def main():
 
 
 def download_comic(path, start='1', end='#'):
-    """ Function to download the comicson the xkcd website
+    """ Function to download the comics on the xkcd website
 
     Start parameter specifies the first comic to download and
     end specifies where to stop. If end is a comic number, the
@@ -98,43 +94,20 @@ def download_comic(path, start='1', end='#'):
     url = 'http://xkcd.com/{0}'.format(start)
 
     while not url.endswith(end):
-        # Getting the webpage
-        res = get_resource(url)
 
-        soup = bs4.BeautifulSoup(res.text, "html.parser")
+        # Getting the url for the image.
+        comic_url = xkcd.get_image_url(url)
 
-        if current_comic == '':
-            current_comic = os.path.split(url)[1]
-
-        image_element = soup.select('#comic img')
-        if len(image_element) > 0:
-            try:
-                # Getting the url for the image.
-                comic_url = 'http:{0}'.format(image_element[0].get('src'))
-
-                # Download and save the image
-                res = download_image(comic_url, path)
-
-                # Get the nexk link
-                url = get_next_url(current_comic)
-
-            except requests.exceptions.MissingSchema:
-
-                log.error('{0}:{1}'.format(
-                    current_comic,
-                    'error downloading'))
-
-                # skip this comic
-                url = get_next_url(current_comic)
-                continue
-        else:
-            log.error('{0}:{1}'.format(
-                current_comic,
-                'image not found'))
-
-            # skip to the next link
+        if comic_url is None:
             url = get_next_url(current_comic)
             continue
+
+        # Download and save the image
+        xkcd.download_image(comic_url, path)
+
+        # Get the nexk link
+        url = get_next_url(current_comic)
+
     if end != '#':
         end = str(int(end) - 1)
         log.info('{0}--{1}:{2}'.format(start, end, 'success'))
@@ -143,6 +116,9 @@ def download_comic(path, start='1', end='#'):
 
 
 def get_next_url(comic, ascending=True):
+    if comic == '':
+        return 'http//xkcd.com/#'
+
     if ascending:
         comic = str(int(comic) + 1)
     else:
@@ -150,33 +126,6 @@ def get_next_url(comic, ascending=True):
 
     return 'http://xkcd.com/{0}'.format(comic)
 
-
-def download_image(url, path):
-    """ This function downloads and saves the image specified
-    by the given url.
-    """
-
-    print 'Downloading image {0}...'.format(os.path.basename(url))
-    res = get_resource(url)
-
-    with open(os.path.join(path, os.path.basename(url)), 'wb') as imageFile:
-        for chunk in res.iter_content(100000):
-            imageFile.write(chunk)
-
-
-def get_resource(url):
-    """ Function to download a web resource at the specified url.
-    Example: website, image e.t.c
-
-    It returns a requests object
-    """
-    res = requests.get(url)
-    try:
-        res.raise_for_status()
-    except Exception, e:
-        raise e
-
-    return res
 
 if __name__ == '__main__':
     main()
