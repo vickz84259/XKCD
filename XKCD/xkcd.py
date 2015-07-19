@@ -15,42 +15,33 @@ import bs4
 
 # Project-specific modules
 
-# Defining Constants
-STATUS = ['Image not found', 'Error downloading', 'Success']
-PATH = ''
 
-CONFIG = ConfigParser.ConfigParser()
-
-LOGGER = logging.getLogger(__name__)
-
-
-def create_config():
+def create_config(configuration):
     """ Function used to create the configuration file
     if it does not exist in the program's path.
 
     It returns a ConfigParser object
     """
-    CONFIG.add_section('Defaults')
-    CONFIG.set('Defaults', 'path', 'C:\\XKCD')
+    configuration.add_section('Defaults')
+    configuration.set('Defaults', 'path', 'C:\\XKCD')
 
     if not os.path.lexists('C:\\XKCD'):
         os.mkdir('C:\\XKCD')
 
     with open('xkcd.cfg', 'wb') as configfile:
-        CONFIG.write(configfile)
-
-    return CONFIG
+        configuration.write(configfile)
 
 
 def get_args():
     """ Function that parses the command line arguments and returns
     them in a argparse.Namespace object
     """
-    global PATH, CONFIG
+    config = ConfigParser.ConfigParser()
+
     if not os.path.lexists('xkcd.cfg'):
-        CONFIG = create_config()
+        create_config(config)
     else:
-        CONFIG.read('xkcd.cfg')
+        config.read('xkcd.cfg')
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -73,7 +64,7 @@ def get_args():
                 comics since the last one that was downloaded
             '''))
 
-    parser.add_argument('-p', '--path', default=CONFIG.get('Defaults', 'path'),
+    parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
                         help='The folder where the xkcd comics will be saved\
                         (default: %(default)s)')
 
@@ -98,31 +89,30 @@ def get_args():
 
     args = parser.parse_args()
 
-    if args.path != CONFIG.get('Defaults', 'path'):
+    if args.path != config.get('Defaults', 'path'):
 
         if not os.path.lexists(args.path):
             os.mkdir(args.path)
-            CONFIG.set('Defaults', 'path', args.path)
+            config.set('Defaults', 'path', args.path)
         else:
-            CONFIG.set('Defaults', 'path', args.path)
+            config.set('Defaults', 'path', args.path)
 
         with open('xkcd.cfg', 'wb') as configfile:
-            CONFIG.write(configfile)
-
-    PATH = args.path
+            config.write(configfile)
 
     return vars(args)
 
 
 def main():
-    LOGGER.setLevel(logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
 
     file_handler = logging.FileHandler('xkcd.log', 'ab')
 
     formatter = logging.Formatter('%(levelname)s:%(message)s')
     file_handler.setFormatter(formatter)
 
-    LOGGER.addHandler(file_handler)
+    logger.addHandler(file_handler)
 
     args = get_args()
     keys = args.keys()
@@ -138,7 +128,7 @@ def main():
             x = line.split(':')
             if x[0] != 'INFO':
                 continue
-            elif x[2] == STATUS[2]:
+            elif x[2] == 'success':
                 comics.append(x[1])
 
     if comics != []:
@@ -155,38 +145,44 @@ def main():
 
     try:
         if 'comic_number' in keys:
-                download_comic(start=str(args['comic_number']),
-                               end=str(int(args['comic_number']) + 1))
+                download_comic(
+                    args['path'],
+                    start=str(args['comic_number']),
+                    end=str(int(args['comic_number']) + 1))
 
         elif 'comic_range' in keys and args['comic_range'][1] != '#':
 
-                download_comic(start=args['comic_range'][0],
-                               end=str(int(args['comic_range'][1]) + 1))
+                download_comic(
+                    args['path'],
+                    start=args['comic_range'][0],
+                    end=str(int(args['comic_range'][1]) + 1))
 
         elif 'comic_range' in keys and args['comic_range'][1] == '#':
 
-                download_comic(start=args['comic_range'][0])
+                download_comic(args['path'], start=args['comic_range'][0])
 
         elif args['all']:
-                download_comic()
+                download_comic(args['path'])
 
         else:
             if initial is None or final == '#':
-                download_comic(start='')
+                download_comic(args['path'], start='')
             else:
-                download_comic(start=initial, end=str(int(final) + 1))
+                download_comic(args['path'], start=initial,
+                               end=str(int(final) + 1))
     except Exception, e:
-        LOGGER.exception('There was a problem: {}'.format(str(e)))
+        logger.exception('There was a problem: {}'.format(str(e)))
         print 'Error logged.'
 
 
-def download_comic(start='1', end='#'):
+def download_comic(path, start='1', end='#'):
     """ Function to download the comicson the xkcd website
 
     Start parameter specifies the first comic to download and
     end specifies where to stop. If end is a comic number, the
     specified comic will not be downloaded.
     """
+    log = logging.getLogger(__name__)
     current_comic = start
     url = 'http://xkcd.com/{0}'.format(start)
 
@@ -206,28 +202,33 @@ def download_comic(start='1', end='#'):
                 comic_url = 'http:{0}'.format(image_element[0].get('src'))
 
                 # Download and save the image
-                res = download_image(comic_url)
+                res = download_image(comic_url, path)
 
                 # Get the nexk link
                 url = get_next_url(current_comic)
 
             except requests.exceptions.MissingSchema:
-                LOGGER.error('{0}:{1}'.format(current_comic, STATUS[1]))
+
+                log.error('{0}:{1}'.format(
+                    current_comic,
+                    'error downloading'))
 
                 # skip this comic
                 url = get_next_url(current_comic)
                 continue
         else:
-            LOGGER.error('{0}:{1}'.format(current_comic, STATUS[0]))
+            log.error('{0}:{1}'.format(
+                current_comic,
+                'image not found'))
 
             # skip to the next link
             url = get_next_url(current_comic)
             continue
     if end != '#':
         end = str(int(end) - 1)
-        LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+        log.info('{0}--{1}:{2}'.format(start, end, 'success'))
     else:
-        LOGGER.info('{0}--{1}:{2}'.format(start, end, STATUS[2]))
+        log.info('{0}--{1}:{2}'.format(start, end, 'success'))
 
 
 def get_next_url(comic, ascending=True):
@@ -239,7 +240,7 @@ def get_next_url(comic, ascending=True):
     return 'http://xkcd.com/{0}'.format(comic)
 
 
-def download_image(url):
+def download_image(url, path):
     """ This function downloads and saves the image specified
     by the given url.
     """
@@ -247,7 +248,7 @@ def download_image(url):
     print 'Downloading image {0}...'.format(os.path.basename(url))
     res = get_resource(url)
 
-    with open(os.path.join(PATH, os.path.basename(url)), 'wb') as imageFile:
+    with open(os.path.join(path, os.path.basename(url)), 'wb') as imageFile:
         for chunk in res.iter_content(100000):
             imageFile.write(chunk)
 
