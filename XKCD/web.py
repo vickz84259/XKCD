@@ -26,7 +26,7 @@ def get_image_url(webpage):
     try:
         return webpage['img']
     except Exception:
-        log.error('{0}:{1}'.format(webpage, 'image not found'))
+        log.exception('{0}:{1}'.format(webpage, 'image not found'))
 
         return None
 
