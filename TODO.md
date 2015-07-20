@@ -1,6 +1,6 @@
 TO DO:
  
-1.  [ ] Concurrency to the project to improve speed of execution
+1.  [x] Concurrency to the project to improve speed of execution
  
 2.  [ ] Option to download comic of a specific date
   
