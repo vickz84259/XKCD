@@ -1,5 +1,9 @@
 #! python2
 # [SublimeLinter @python:2]
+
+__author__ = 'Victor Otieno Omondi'
+__version__ = ''
+
 import logging
 import os
 import requests
@@ -9,9 +13,18 @@ log = logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def get_image_url(webpage):
+    """ Function to parse a webpage and get an image's url.
+
+    The function looks for a tag "<div id='comic'>". It then looks if within
+    the div tag there is an image tag (<img>).
+
+    If the above is true it returns the image's url. Otherwise it returns none.
+    """
+
     # Getting the webpage
     res = get_resource(webpage)
 
+    # parsing the webpage
     soup = bs4.BeautifulSoup(res.text, "html.parser")
     image_element = soup.select('#comic img')
 
@@ -26,6 +39,8 @@ def get_image_url(webpage):
 def download_image(url, path):
     """ This function downloads and saves the image specified
     by the given url.
+
+    The image is saved in the specified path.
     """
 
     print 'Downloading image {0}...'.format(os.path.basename(url))

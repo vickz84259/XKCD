@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # [SublimeLinter @python:2]
-# xkcd_main.py - Downloads comics from xkcd.com.
+# download_xkcd.py - Downloads comics from xkcd.com.
+
+__author__ = 'Victor Otieno Omondi'
+__version__ = ''
 
 # Standard library modules
 import logging
@@ -11,6 +14,7 @@ import xkcd
 
 
 def main():
+    # Initializing the logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
@@ -21,6 +25,8 @@ def main():
 
     logger.addHandler(file_handler)
 
+    # Getting the command line arguments
+    # args is a dictionary
     args = argument.get_args()
     keys = args.keys()
 
@@ -52,6 +58,7 @@ def main():
 
     try:
         if 'comic_number' in keys:
+
                 download_comic(
                     args['path'],
                     start=str(args['comic_number']),
@@ -72,6 +79,7 @@ def main():
                 download_comic(args['path'])
 
         else:
+
             if initial is None or final == '#':
                 download_comic(args['path'], start='')
             else:
@@ -83,11 +91,13 @@ def main():
 
 
 def download_comic(path, start='1', end='#'):
-    """ Function to download the comics on the xkcd website
+    """ Function to download the comics on the xkcd website.
 
-    Start parameter specifies the first comic to download and
-    end specifies where to stop. If end is a comic number, the
-    specified comic will not be downloaded.
+    Parameters:
+        path: specifies where the comics will be downloaded.
+        start: specifies the first comic to be downloaded.
+        end: specifies where the program to stop. The comic number
+            indicated with this parameter will not be downloaded.
     """
     log = logging.getLogger(__name__)
     current_comic = start
@@ -98,7 +108,9 @@ def download_comic(path, start='1', end='#'):
         # Getting the url for the image.
         comic_url = xkcd.get_image_url(url)
 
+        # The function could not find any image url
         if comic_url is None:
+            # Skips to the next comic
             url = get_next_url(current_comic)
             continue
 

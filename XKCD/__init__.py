@@ -1,3 +1,1 @@
-from web import get_image_url
-from web import download_image
-from web import get_resource
+from web import get_image_url, download_image, get_resource
