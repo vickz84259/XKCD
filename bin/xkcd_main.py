@@ -1,6 +1,6 @@
-#! python2
+#!/usr/bin/env python
 # [SublimeLinter @python:2]
-# xkcd.py - Downloads comics from xkcd.com.
+# xkcd_main.py - Downloads comics from xkcd.com.
 
 # Standard library modules
 import logging
