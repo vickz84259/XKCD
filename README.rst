@@ -1,9 +1,10 @@
-Xkcd-python
-===========
+xkcd
+====
 
 This is a project written in python intented to download Xkcd comics.
 
-I wrote it as a project a beginner would be involved in.
+**This project has not been endorsed by Randall Munroe nor is it an official project by xkcd.com.** 
+**It's just a fan-made project by a fan made for the fans.**
 
 What is `xkcd`_?
 ----------------
