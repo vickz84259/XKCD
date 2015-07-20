@@ -3,7 +3,7 @@
 # download_xkcd.py - Downloads comics from xkcd.com.
 
 __author__ = 'Victor Otieno Omondi'
-__version__ = '2.2.1'
+__version__ = '2.2.2'
 
 # Standard library modules
 import logging
@@ -99,7 +99,8 @@ def download_comic(path, start=1, end=0):
         end = start + 1
 
     for number in range(start, end):
-        url_queue.put((number, 'http://xkcd.com/{}/info.0.json'.format(i)))
+        url_queue.put(
+            (str(number), 'http://xkcd.com/{}/info.0.json'.format(i)))
 
     time.sleep(5)
 
