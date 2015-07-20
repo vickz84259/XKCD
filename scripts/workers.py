@@ -29,14 +29,14 @@ class UrlWorker(threading.Thread):
     def run(self):
         while True:
             # fetch webpage url from queue
-            url = self.web_queue.get()
+            comic_number, url = self.web_queue.get()
 
             # fetch image url from webpage
             image_url = xkcd.get_image_url(url)
 
             if image_url is not None:
                 # place url in download queue
-                self.image_queue.put(image_url)
+                self.image_queue.put((comic_number, image_url))
 
             self.web_queue.task_done()
 
@@ -60,9 +60,9 @@ class DownloadWorker(threading.Thread):
     def run(self):
         while True:
             # fetch image url from queue
-            url = self.image_queue.get()
+            comic_number, url = self.image_queue.get()
 
             # download the image
-            xkcd.download_image(url, self.path)
+            xkcd.download_image(url, self.path, comic_number)
 
             self.image_queue.task_done()

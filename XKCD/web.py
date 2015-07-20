@@ -31,7 +31,7 @@ def get_image_url(webpage):
         return None
 
 
-def download_image(url, path):
+def download_image(url, path, number):
     """ This function downloads and saves the image specified
     by the given url.
 
@@ -41,7 +41,8 @@ def download_image(url, path):
     print 'Downloading image {0}...'.format(os.path.basename(url))
     res = get_resource(url)
 
-    with open(os.path.join(path, os.path.basename(url)), 'wb') as imageFile:
+    with open(os.path.join(path, number, os.path.basename(url)), 'wb') \
+            as imageFile:
         for chunk in res.iter_content(100000):
             imageFile.write(chunk)
 
