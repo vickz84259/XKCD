@@ -9,9 +9,11 @@ __version__ = ''
 import logging
 import Queue
 
+# Third-Party modules
+import requests
+
 # Project-specific modules
 import argument
-import xkcd
 import workers
 
 url_workers = 4
@@ -43,19 +45,19 @@ def main():
 
             download_comic(
                 args['path'],
-                start=str(args['comic_number']),
-                end=str(int(args['comic_number']) + 1))
+                start=int(args['comic_number']),
+                end=int(args['comic_number']) + 1)
 
         elif 'comic_range' in keys and args['comic_range'][1] != '#':
 
             download_comic(
                 args['path'],
-                start=args['comic_range'][0],
-                end=str(int(args['comic_range'][1]) + 1))
+                start=int(args['comic_range'][0]),
+                end=int(args['comic_range'][1]) + 1)
 
         elif 'comic_range' in keys and args['comic_range'][1] == '#':
 
-            download_comic(args['path'], start=args['comic_range'][0])
+            download_comic(args['path'], start=int(args['comic_range'][0]))
 
         elif args['all']:
 
@@ -63,14 +65,14 @@ def main():
 
         elif args['latest']:
 
-            download_comic(args['path'], start='0')
+            download_comic(args['path'], start=0)
 
     except Exception, e:
         logger.exception('There was a problem: {}'.format(str(e)))
         print 'Error logged.'
 
 
-def download_comic(path, start='1', end='0'):
+def download_comic(path, start=1, end=0):
     """ Function to download the comics on the xkcd website.
 
     Parameters:
@@ -86,11 +88,26 @@ def download_comic(path, start='1', end='0'):
         t.setDaemon(True)
         t.start()
 
-    if end != '#':
-        end = str(int(end) - 1)
-        log.info('{0}--{1}:{2}'.format(start, end, 'success'))
-    else:
-        log.info('{0}--{1}:{2}'.format(start, end, 'success'))
+    if end == 0:
+        req = requests.get('https://xkcd.com/info.0.json')
+        end = req.json()['num'] + 1
+    if start == 0:
+        req = requests.get('https://xkcd.com/info.0.json')
+        start = req.json()['num']
+        end = start + 1
+
+    for i in range(start, end):
+        url_queue.put('http://xkcd.com/{}'.format(i))
+
+    for i in range(download_workers):
+        t = workers.DownloadWorker(path, download_queue)
+        t.setDaemon(True)
+        t.start()
+
+    url_queue.join()
+    download_queue.join()
+
+    log.info('{0}--{1}:{2}'.format(start, end, 'success'))
 
 
 def get_next_url(comic, ascending=True):
