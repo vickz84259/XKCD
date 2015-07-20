@@ -7,7 +7,6 @@ __version__ = ''
 import logging
 import os
 import requests
-import bs4
 
 log = logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -15,8 +14,7 @@ log = logging.getLogger(__name__).addHandler(logging.NullHandler())
 def get_image_url(webpage):
     """ Function to parse a webpage and get an image's url.
 
-    The function looks for a tag "<div id='comic'>". It then looks if within
-    the div tag there is an image tag (<img>).
+    The webpage url should point to it's json format.
 
     If the above is true it returns the image's url. Otherwise it returns none.
     """
@@ -24,13 +22,11 @@ def get_image_url(webpage):
     # Getting the webpage
     res = get_resource(webpage)
 
-    # parsing the webpage
-    soup = bs4.BeautifulSoup(res.text, "html.parser")
-    image_element = soup.select('#comic img')
+    webpage = res.json()
 
-    if image_element > 0:
-        return 'http:{0}'.format(image_element[0].get('src'))
-    else:
+    try:
+        return webpage['img']
+    except Exception:
         log.error('{0}:{1}'.format(webpage, 'image not found'))
 
         return None
