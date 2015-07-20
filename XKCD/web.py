@@ -2,7 +2,7 @@
 # [SublimeLinter @python:2]
 
 __author__ = 'Victor Otieno Omondi'
-__version__ = ''
+__version__ = '2.0.0-alpha'
 
 import logging
 import os
