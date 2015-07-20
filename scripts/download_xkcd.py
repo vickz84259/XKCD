@@ -7,10 +7,18 @@ __version__ = ''
 
 # Standard library modules
 import logging
+import Queue
 
 # Project-specific modules
 import argument
 import xkcd
+import workers
+
+url_workers = 4
+download_workers = 6
+
+url_queue = Queue.Queue()
+download_queue = Queue.Queue()
 
 
 def main():
@@ -30,67 +38,39 @@ def main():
     args = argument.get_args()
     keys = args.keys()
 
-    comics = []
-    initial = None
-    final = None
-
-    # Reading the log file to check the previously downloaded
-    # comics
-    with open('xkcd.log', 'rb') as fin:
-        for line in fin.readlines():
-            x = line.split(':')
-            if x[0] != 'INFO':
-                continue
-            elif x[2] == 'success':
-                comics.append(x[1])
-
-    if comics != []:
-        for i in comics:
-            comic_one = i.split('--')[0]
-            comic_two = i.split('--')[1]
-
-            if initial is None or comic_one < initial:
-                initial = int(comic_one)
-
-            if final != '#' and final is None or comic_two == '#'\
-                    or comic_two > final:
-                final = comic_two
-
     try:
         if 'comic_number' in keys:
 
-                download_comic(
-                    args['path'],
-                    start=str(args['comic_number']),
-                    end=str(int(args['comic_number']) + 1))
+            download_comic(
+                args['path'],
+                start=str(args['comic_number']),
+                end=str(int(args['comic_number']) + 1))
 
         elif 'comic_range' in keys and args['comic_range'][1] != '#':
 
-                download_comic(
-                    args['path'],
-                    start=args['comic_range'][0],
-                    end=str(int(args['comic_range'][1]) + 1))
+            download_comic(
+                args['path'],
+                start=args['comic_range'][0],
+                end=str(int(args['comic_range'][1]) + 1))
 
         elif 'comic_range' in keys and args['comic_range'][1] == '#':
 
-                download_comic(args['path'], start=args['comic_range'][0])
+            download_comic(args['path'], start=args['comic_range'][0])
 
         elif args['all']:
-                download_comic(args['path'])
 
-        else:
+            download_comic(args['path'])
 
-            if initial is None or final == '#':
-                download_comic(args['path'], start='')
-            else:
-                download_comic(args['path'], start=initial,
-                               end=str(int(final) + 1))
+        elif args['latest']:
+
+            download_comic(args['path'], start='0')
+
     except Exception, e:
         logger.exception('There was a problem: {}'.format(str(e)))
         print 'Error logged.'
 
 
-def download_comic(path, start='1', end='#'):
+def download_comic(path, start='1', end='0'):
     """ Function to download the comics on the xkcd website.
 
     Parameters:
@@ -100,25 +80,11 @@ def download_comic(path, start='1', end='#'):
             indicated with this parameter will not be downloaded.
     """
     log = logging.getLogger(__name__)
-    current_comic = start
-    url = 'http://xkcd.com/{0}'.format(start)
 
-    while not url.endswith(end):
-
-        # Getting the url for the image.
-        comic_url = xkcd.get_image_url(url)
-
-        # The function could not find any image url
-        if comic_url is None:
-            # Skips to the next comic
-            url = get_next_url(current_comic)
-            continue
-
-        # Download and save the image
-        xkcd.download_image(comic_url, path)
-
-        # Get the nexk link
-        url = get_next_url(current_comic)
+    for i in range(url_workers):
+        t = workers.UrlWorker(url_queue, download_queue)
+        t.setDaemon(True)
+        t.start()
 
     if end != '#':
         end = str(int(end) - 1)

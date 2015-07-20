@@ -51,9 +51,7 @@ def get_args():
                 to the latest one. Inclusive of the latest one.
 
             python xkcd.py --latest
-                **Downloads the latest comic if there are no previously\
-                downloaded comics. Otherwise it downloads all the\
-                comics since the last one that was downloaded
+                **Downloads the latest comic.
             '''))
 
     parser.add_argument('-p', '--path', default=config.get('Defaults', 'path'),
@@ -64,9 +62,7 @@ def get_args():
     group = parser.add_mutually_exclusive_group()
 
     group.add_argument('-l', '--latest', action='store_true', help='\
-            Downloads the latest comic if there are no previously\
-            downloaded comics. Otherwise it downloads all the\
-            comics since the last one that was downloaded.')
+            Downloads the latest comic.')
 
     group.add_argument('-a', '--all', action='store_true', help='\
         Downloads all xkcd comics.')
