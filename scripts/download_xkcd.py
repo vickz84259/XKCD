@@ -3,11 +3,12 @@
 # download_xkcd.py - Downloads comics from xkcd.com.
 
 __author__ = 'Victor Otieno Omondi'
-__version__ = '2.0.1-alpha'
+__version__ = '2.1.1-alpha'
 
 # Standard library modules
 import logging
 import Queue
+import time
 
 # Third-Party modules
 import requests
@@ -16,8 +17,8 @@ import requests
 import argument
 import workers
 
-url_workers = 4
-download_workers = 6
+url_workers = 10
+download_workers = 8
 
 url_queue = Queue.Queue()
 download_queue = Queue.Queue()
@@ -69,7 +70,8 @@ def main():
 
     except Exception, e:
         logger.exception('There was a problem: {}'.format(str(e)))
-        print 'Error logged.'
+        print e
+        print 'Error logged'
 
 
 def download_comic(path, start=1, end=0):
@@ -98,6 +100,8 @@ def download_comic(path, start=1, end=0):
 
     for i in range(start, end):
         url_queue.put('http://xkcd.com/{}/info.0.json'.format(i))
+
+    time.sleep(5)
 
     for i in range(download_workers):
         t = workers.DownloadWorker(path, download_queue)
