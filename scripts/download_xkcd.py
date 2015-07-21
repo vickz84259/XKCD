@@ -3,7 +3,7 @@
 # download_xkcd.py - Downloads comics from xkcd.com.
 
 __author__ = 'Victor Otieno Omondi'
-__version__ = '2.2.3'
+__version__ = '2.2.4'
 
 # Standard library modules
 import logging
