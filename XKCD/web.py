@@ -1,5 +1,4 @@
-#! python2
-# [SublimeLinter @python:2]
+#!/usr/bin/env python
 
 __author__ = 'Victor Otieno Omondi'
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# [SublimeLinter @python:2]
 # download_xkcd.py - Downloads comics from xkcd.com.
 
 __author__ = 'Victor Otieno Omondi'
