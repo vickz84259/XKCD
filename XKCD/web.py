@@ -37,7 +37,7 @@ def download_image(url, path, number):
     The image is saved in the specified path.
     """
 
-    print 'Downloading image {0}...'.format(os.path.basename(url))
+    print('Downloading image {0}...'.format(os.path.basename(url)))
     res = get_resource(url)
 
     with open(os.path.join(path, '{}_{}'.format(number, os.path.basename(url))), 'wb') \
@@ -55,7 +55,7 @@ def get_resource(url):
     res = requests.get(url)
     try:
         res.raise_for_status()
-    except Exception, e:
+    except Exception as e:
         raise e
 
     return res
