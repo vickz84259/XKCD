@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# [SublimeLinter @python:2]
 # download_xkcd.py - Downloads comics from xkcd.com.
 
 __author__ = 'Victor Otieno Omondi'
@@ -68,10 +67,10 @@ def main():
 
             download_comic(args['path'], start=0)
 
-    except Exception, e:
+    except Exception as e:
         logger.exception('There was a problem: {}'.format(str(e)))
-        print e
-        print 'Error logged'
+        print(e)
+        print('Error logged')
 
 
 def download_comic(path, start=1, end=0):

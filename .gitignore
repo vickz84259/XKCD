@@ -4,5 +4,5 @@ xkcd.log
 *.py[cod]
 
 .codeintel/
-vick.sublime-project
-vick.sublime-workspace
+*.sublime-project
+*.sublime-workspace

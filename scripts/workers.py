@@ -1,19 +1,23 @@
-#! python2
-# [SublimeLinter @python:2]
+#!/usr/bin/env python
 
 __author__ = 'Victor Otieno Omondi'
 
 import threading
 import xkcd
+import logging
+
+log = logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class UrlWorker(threading.Thread):
+
     """UrlWorker objects get a webpage's url from a queue
     and parse the webpage for a specified image's url.
 
     The image's url is placed in another queue for processing by
     other workers.
     """
+
     def __init__(self, web_queue, image_queue):
         """Initializing a UrlWorker objects
 
@@ -42,9 +46,11 @@ class UrlWorker(threading.Thread):
 
 
 class DownloadWorker(threading.Thread):
+
     """DownloadWorker objects get an image's url from a queue
     and download the image and save it in a specified path
     """
+
     def __init__(self, path, image_queue):
         """ Initializing DownloadWorker object.
 

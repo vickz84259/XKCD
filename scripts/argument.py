@@ -1,5 +1,4 @@
-#! python2
-# [SublimeLinter @python:2]
+#!/usr/bin/env python
 
 # Standard library modules
 import ConfigParser
